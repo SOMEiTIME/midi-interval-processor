@@ -15,6 +15,7 @@ bool allowingUknownMidiMessages = true; //the midi specification says to allow f
 int stopPoint = -1; //set to -1 to not stop at a certain point in the midi file
 int recursionLevel = 0; //tracks the times we have recursed
 int recursionLimit = 999999999;
+//int recursionLimit = 1000;
 map<int,string> intNoteMap = {
     {0,"C"},
     {1,"C#"},
@@ -120,10 +121,10 @@ int NoteGetter::getVariableLengthValue(string &stringHexMid, int position) {
 */
 int NoteGetter::getNextNoteOnPosition(string &stringHexMid,int position, bool isADeltaTimeEvent) {//i'd like this to be a pointer, not an actual string (longer term optimisation)
     if (stopPoint != -1 and position >= stopPoint) {
-        std::cout << "\n\nSTOPPED AT POSITION : " << position << "\n\n";
-        assert(false); //replace with better functionality
+        std::cerr << "\n\nSTOPPED AT POSITION : " << position << "\n\n";
+        assert(false); 
     } else if (recursionLevel >= recursionLimit) {//warning, this will stop your code
-        std::cout << "\n\nRECURSED TOO HIGH, STOPPED AT POSITION: " << position << "\n\n";
+        std::cerr << "\n\nRECURSED TOO HIGH, STOPPED AT POSITION: " << position << "\n\n";
         assert(false);
     }
     int oldPosition = position;
@@ -398,17 +399,16 @@ int NoteGetter::populateListWithNotes(ifstream &inFile, list<int> &notes) {
     if (showNoteCount) {
         std::cout << "     The count of notes is " << std::dec << count << "\n"; //-4 because of the stupid hack
     }
-    return 1;
+    return count;
 }
 /*
 //main needs to be disconnected from the midi_to_interval functionality
 int main(int argc, char *argv[] ) {
-    return run(argc,argv);
+    return run(argc,argv[1]);
 }
 */
-
-int run(int argc, char *argv[] ) {
-    string fileName = argv[1];
+int run(string fileName) {
+    //std::cout << "hello\n";
     ifstream inFile;
     //open the input file
     inFile.open(fileName,ios::binary);
@@ -419,7 +419,7 @@ int run(int argc, char *argv[] ) {
     list<int> notes;
     list<int> intervals;
     NoteGetter noteGet;
-    noteGet.populateListWithNotes(inFile,notes);
+    int noteCount = noteGet.populateListWithNotes(inFile,notes);
     int previous = -1;
     if (isVerbose) {
         std::cout << "\n   Notes: ";
@@ -455,7 +455,7 @@ int run(int argc, char *argv[] ) {
         std::cout << "\n";
     }
     outFile.close();
-    return 0;
+    return noteCount;
 }
 
 

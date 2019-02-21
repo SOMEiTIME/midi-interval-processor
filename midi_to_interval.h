@@ -19,6 +19,6 @@ using namespace std;
 
 string int_to_note(int x); 
 
-int run(int argc, char *argv[]);
+int run(string fileName);
 
 #endif
