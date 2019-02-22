@@ -41,7 +41,6 @@ int run(string fileName) {
     int noteCount = 0;
     list<int> notes; //the list of notes that are found in the file
     list<int> intervals; //the list of intervals of the notes found in the file
-
     if (inFile.good()) {
         noteGetter noteGet(inFile);
         //populate the list with all the notes found in the given input file of type .mid
@@ -70,16 +69,13 @@ int run(string fileName) {
     if (showNoteCount) {
         std::cout << "For File: " << fileName << "\n The count of notes is " << std::dec << notes.size() << "\n"; 
     }
-
     ofstream outFile; 
     outFile.open(fileName + "_intervals.txt",ios::out); 
-    
     if (outFile.good()) {
         for (int x : intervals){ 
             outFile << std::dec << (x+288) % 12 << " "; //adding 288 keeps x positive
         }
-    outFile.close();
-
+        outFile.close();
     } else {
         std::cerr << "Unable to open output file: \n" + fileName+" \n";
         exit(1);
