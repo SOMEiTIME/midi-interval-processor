@@ -4,9 +4,6 @@
 bool showNoteCount = false;
 bool isPrintingNoteNames = false;
 
-bool catchPotentialNoteOnsInDeltaTimeEvents = false;
-bool allowingUknownMidiMessages = true; //the midi specification says to allow for uknown messages
-
 map<int,string> intNoteMap = {
     {0,"C"},
     {1,"C#"},
@@ -21,10 +18,8 @@ map<int,string> intNoteMap = {
     {10,"A#"},
     {11,"B"},
     //and 12 wraps around to C again (so use mod)
-};  //also could have used enum
+};
 
-//  use 
-//  g++ -std=c++11 midi_to_interval.cpp
 /*  takes an int, and returns a string representation of the note name, 
     exluding flats and complex spellings of simple notes (like E# for F)
 */
@@ -33,6 +28,11 @@ string int_to_note(int x) {
     return intNoteMap[remainder];
 }
 
+/*
+    Class NoteGetter
+    Instantiated for each file analyzed
+    The main method is populateListWithNotes, which finds all the notes in a midi file and adds them to a given list
+*/
 class NoteGetter {
     int runningStatus = false;
     string lastStatusByte = "";
@@ -46,7 +46,7 @@ private:
     int indexAfterDeltaTimeEvent (int position);
     int getVariableLengthValue(int position);
     int getLengthOfVariableLengthValue(int position);
-    void incrementLengthandValue(int& position, int& length, int& value);
+    void incrementLengthandValue(int position, int& length, int& value);
     string nextPotentialChunkType(int position);
     int indexAfterEndOfFileMessageAt(int position);
     int indexAfterMThdAt(int position);
@@ -56,6 +56,9 @@ private:
     int indexAfterNextNoteOnMessage(string eventType, int position);
 };
 
+/*
+    Constructor for NoteGetter, inFile must point to a file in the format .mid (MIDI 1.0 file format)
+*/
 NoteGetter::NoteGetter(ifstream &inFile) {
     string str;
     inFile.seekg(0); //gotta reset the pointer to the start of the file!, When it was written, the file pointer got put to almost the end of the file
@@ -89,12 +92,11 @@ NoteGetter::NoteGetter(ifstream &inFile) {
 }
 
 /*
-    Helper for VariableLengthValues, used in the getLengthOfVariableLengthValue and getVariableLengthValue
-    desired determines what is returned. If desired is "value", 
-    the value of the varaible length value is returned, if desired is "length" the length is returned
-    otherwise there is an error
+    Helper method for Variable Length Values, used in the getLengthOfVariableLengthValue and getVariableLengthValue
+    increments both length and value (should be 0 at the calling of the method)
+    Position is the start of the variable length value in the given stringHexMid
 */
-void NoteGetter::incrementLengthandValue(int& position, int& length, int& value){
+void NoteGetter::incrementLengthandValue(int position, int& length, int& value){
     bool notTheEnd = true; 
     stringstream valueString;
     while (notTheEnd) {
@@ -114,17 +116,21 @@ void NoteGetter::incrementLengthandValue(int& position, int& length, int& value)
         //result: 1000 0000  so a nonzero result means that we aren't at the end
         //0111 1111 would be the end of the delta time event
         unsigned char result = deltaPartInt & msbBitMask;
-        if (result == 0) { //this means we are at the end of the delta time event woohoo
+        if (result == 0) { //this means the method is at the end of the delta time event 
             notTheEnd = false;
         }
         length +=2;
         unsigned char valueOfDeltaPartInt = deltaPartInt & ~msbBitMask;
-        value = value << 7; //I'm not concerned about overflow, because of the max value allowed of the variable length quntities by the midi format
+        value = value << 7; //I'm not concerned about overflow, because the max value allowed in variable length quntities is defined by the midi format
         value += valueOfDeltaPartInt; 
     }
     return;
 }
 
+/*
+    Returns the length of a variable length value
+    Position is the start of the variable length value in the given stringHexMid
+*/
 int NoteGetter::getLengthOfVariableLengthValue(int position){
     int value = 0;
     int length = 0;
@@ -133,9 +139,8 @@ int NoteGetter::getLengthOfVariableLengthValue(int position){
 }
 
 /*
-    returns the value given by a varaiable length value 
-    position is the start of the variable length value in the given stringHexMid
-
+    Returns the value given by a varaiable length value 
+    Position is the start of the variable length value in the given stringHexMid
 */
 int NoteGetter::getVariableLengthValue(int position) {
     int value = 0;
@@ -144,6 +149,10 @@ int NoteGetter::getVariableLengthValue(int position) {
     return value;
 }
 
+/*
+    Returns the index value of the next message after an end of file message
+    Position is the start of the current message
+*/
 int NoteGetter::indexAfterEndOfFileMessageAt(int position) {
     runningStatus = false;
     lastStatusByte = "";
@@ -151,6 +160,10 @@ int NoteGetter::indexAfterEndOfFileMessageAt(int position) {
     return position;
 }
 
+/*
+    Returns the index value of the next message after a MThd header message
+    Position is the start of the current message
+*/
 int NoteGetter::indexAfterMThdAt(int position) {
     runningStatus = false;
     lastStatusByte = "";
@@ -162,6 +175,10 @@ int NoteGetter::indexAfterMThdAt(int position) {
     return getNextNoteOnPosition(position);
 }
 
+/*
+    Returns the index value of the next message after a MTrk header message
+    Position is the start of the current message
+*/
 int NoteGetter::indexAfterMTrkAt(int position) {
     runningStatus = false;
     lastStatusByte = "";
@@ -172,6 +189,10 @@ int NoteGetter::indexAfterMTrkAt(int position) {
     return indexAfterDeltaTimeEvent(position + 16); //we know the next thing will be a delta time event
 }
 
+/*
+    Returns the index value of the next message after a sysex event F0 or F7 message
+    Position is the start of the current message
+*/
 int NoteGetter::indexAfterSysexEventF0orF7(int position) {
     runningStatus = false; //don't exit running status for this type of event?
     lastStatusByte = "";
@@ -184,6 +205,10 @@ int NoteGetter::indexAfterSysexEventF0orF7(int position) {
     return indexAfterDeltaTimeEvent(position+lengthVal);
 }
 
+/*
+    Returns the index value of the next message after a meta event message
+    Position is the start of the current message
+*/
 int NoteGetter::indexAfterMetaEvent(int position) {
     runningStatus = false;
     lastStatusByte = "";            
@@ -205,6 +230,10 @@ int NoteGetter::indexAfterMetaEvent(int position) {
     return indexAfterDeltaTimeEvent(position+lengthVal);
 }
 
+/*
+    Returns the index value of the next message after a note on message
+    Position is the start of the current message
+*/
 int NoteGetter::indexAfterNextNoteOnMessage(string eventType, int position) {
     string potentialMidiEventByte = eventType.substr(0,2);
     string statusType = potentialMidiEventByte.substr(0,1);
@@ -245,6 +274,10 @@ int NoteGetter::indexAfterNextNoteOnMessage(string eventType, int position) {
     }
 }
 
+/*
+    Returns the a block of the MIDI file that may be a chunk type (header message)
+    Position is the start of the current message
+*/
 string NoteGetter::nextPotentialChunkType(int position) {
     string potentialChunkType = "";
     try {
@@ -255,13 +288,19 @@ string NoteGetter::nextPotentialChunkType(int position) {
     return potentialChunkType;
 }
 
+
+/*
+    Returns the position of the next message after a delta time MIDI message
+    Position is the start of the current message
+*/
 int NoteGetter::indexAfterDeltaTimeEvent (int position) {
     position += getLengthOfVariableLengthValue(position);
     return getNextNoteOnPosition(position);//we know the next event will not be a deltaTimeEvent
 }
 
 /*
-      
+    Returns the position of the next note on MIDI message in the file 
+    Position is the start of the current message
 */
 int NoteGetter::getNextNoteOnPosition(int position) {//i'd like this to be a pointer, not an actual string (longer term optimisation)
     string potentialChunkType = nextPotentialChunkType(position);
@@ -274,7 +313,7 @@ int NoteGetter::getNextNoteOnPosition(int position) {//i'd like this to be a poi
     } else if (potentialChunkType == "4d54726b") { // MTrk
         return indexAfterMTrkAt(position); //we know the next thing will be a delta time event
     } else {
-        //its an event!
+        //Its an event
         //it's an EVENT of type: 
         string eventType = stringHexMid.substr(position,2); 
         if (eventType == "f0" or eventType == "f7") { //sysex event F0 or F7
@@ -289,11 +328,9 @@ int NoteGetter::getNextNoteOnPosition(int position) {//i'd like this to be a poi
 
 
 /*
-    Given an open .mid filestream, and an empty list of numerical representation of notes, it will fill that list of notes with the notes on messages found in the .mid file
+    Given an empty list of numerical representation of notes, it will fill that list of notes with the notes on messages found in the .mid file
  */
 int NoteGetter::populateListWithNotes(list<int> &notes) {
-    //the tempFile, and therefore stringHexMid is a string representation of the .mid file (verified) --other than a harmless 00 stuck on the end
-
     int count = 0;
     int position = 0;
     position = getNextNoteOnPosition(position);  
@@ -305,12 +342,11 @@ int NoteGetter::populateListWithNotes(list<int> &notes) {
         noteNumHex = noteOnMessage.substr(0,2);
         velocityNumHex = noteOnMessage.substr(2,2);
         //exlude notes with velocity 0, as those are "note off" messages commonly used in lots of .mid files
-        //int channelNumInt = std::stoul(channelMessage, nullptr, 16); 
         int noteNumInt = std::stoul(noteNumHex, nullptr, 16); //converts the string note on value in hex to an int
         int noteVelInt = std::stoul(velocityNumHex, nullptr, 16);
-        //if (noteNumInt > 21 and noteVelInt >= 5 and noteVelInt <= 127) { //exlude the false notes that are lower than the bottom of a piano
+        //exlude the false notes that are lower than the bottom of a piano
         if (noteVelInt >= 1 and noteVelInt <=127 and noteNumInt >= 0 and noteNumInt <= 127) {
-        //exlude midi messages that don't make sense, at least
+        //exlude midi messages that don't make sense
             notes.push_back(noteNumInt);
             count += 1;
         } 
@@ -323,19 +359,13 @@ int NoteGetter::populateListWithNotes(list<int> &notes) {
             position =  indexAfterDeltaTimeEvent(position+6);
         }
     } 
-    //assert(count >= 0);
-    if (showNoteCount) {
-        std::cout << "     The count of notes is " << std::dec << count << "\n"; 
-    }
     return count;
 }
 
-
 /*
-//main needs to be disconnected from the midi_to_interval functionality
-int main(int argc, char *argv[] ) {
-    return run(argc,argv[1]);
-}
+    Run takes a file name in string form and returns the count of notes in a file, 
+    as well as potentially writing out a file called <FILENAME>_intervals.txt
+    that lists the intervals in order as found in the MIDI file
 */
 int run(string fileName) {
     ifstream inFile;
@@ -370,6 +400,10 @@ int run(string fileName) {
         std::cerr << "Unable to open input file: \n" + fileName+" \n";
         exit(1);
     }
+    if (showNoteCount) {
+        std::cout << "For File: " << fileName << "\n The count of notes is " << std::dec << notes.size() << "\n"; 
+    }
+
     ofstream outFile; 
     outFile.open(fileName + "_intervals.txt",ios::out); 
     
