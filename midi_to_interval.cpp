@@ -44,7 +44,7 @@ class NoteGetter {
     int getNextNoteOnPosition(int position, bool isADeltaTimeEvent);
     int getVariableLengthValue(int position);
     int getLengthOfVariableLengthValue(int position);
-    void incrementLengthandValue(int position, int length, int value);
+    void incrementLengthandValue(int& position, int& length, int& value);
 
     string nextPotentialChunkType(int position);
     int indexOfEndOfFileMessageAt(int position);
@@ -99,7 +99,7 @@ NoteGetter::NoteGetter(ifstream &inFile) {
     the value of the varaible length value is returned, if desired is "length" the length is returned
     otherwise there is an error
 */
-void NoteGetter::incrementLengthandValue(int position, int length, int value){
+void NoteGetter::incrementLengthandValue(int& position, int& length, int& value){
     bool notTheEnd = true; 
     stringstream valueString;
     while (notTheEnd) {
