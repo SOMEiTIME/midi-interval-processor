@@ -1,10 +1,8 @@
-
-
 #include "midi_to_interval.h"
 #include <gtest/gtest.h>
 
 string folder = "testData/"; 
-int allowedRange = 10;
+int allowedRange = 0;
 
 TEST(resultsTest, CountingTwoTriads) {
     EXPECT_EQ(6, run(folder + "2Triads.mid"));
@@ -34,7 +32,6 @@ TEST(resultsTest, FullPieceTest3) {
 TEST(resultsTest, FullPieceTest4) {
     ASSERT_NEAR(5930, run(folder + "Symphony.mid"), allowedRange);                                        
 }
-
 
 
 int main(int argc, char **argv) {

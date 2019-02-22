@@ -3,7 +3,7 @@
 #   - start with ubuntu 16:04, add g++ and GoogleTest
 # Usage:
 #   - create:
-#       docker build ./
+#       docker build ./ --tag midi_interval_tests
 #   - start if not running:
 #       docker start cube_ci
 #   - run with sh access (where [image] is the image id published by docker):
