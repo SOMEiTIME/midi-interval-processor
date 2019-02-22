@@ -44,7 +44,7 @@ class NoteGetter {
     int getNextNoteOnPosition(int position, bool isADeltaTimeEvent);
     int getVariableLengthValue(int position);
     int getLengthOfVariableLengthValue(int position);
-    int getLengthorValue(int position, string desired);
+    void incrementLengthandValue(int position, int length, int value);
 
     string nextPotentialChunkType(int position);
     int indexOfEndOfFileMessageAt(int position);
@@ -99,10 +99,8 @@ NoteGetter::NoteGetter(ifstream &inFile) {
     the value of the varaible length value is returned, if desired is "length" the length is returned
     otherwise there is an error
 */
-int NoteGetter::getLengthorValue(int position, string desired){
-    int length = 0;
+void NoteGetter::incrementLengthandValue(int position, int length, int value){
     bool notTheEnd = true; 
-    int value = 0;
     stringstream valueString;
     while (notTheEnd) {
         string deltaPart = "";
@@ -123,19 +121,15 @@ int NoteGetter::getLengthorValue(int position, string desired){
         value = value << 7; //I'm not concerned about overflow, because of the max value allowed of the variable length quntities by the midi format
         value += valueOfDeltaPartInt; 
     }
-    if (desired == "value") {
-        return value;
-    } else if (desired == "length"){
-        return length;
-    } else {
-        throw "Didn't specify if value or length was desired\n";
-    }
+    return;
 }
 
 
-//change later, its wrong now (get the get variable length value one working)
 int NoteGetter::getLengthOfVariableLengthValue(int position){
-    return getLengthorValue(position, "length");
+    int value = 0;
+    int length = 0;
+    incrementLengthandValue(position, length, value);
+    return length;
 }
 
 
@@ -145,7 +139,10 @@ int NoteGetter::getLengthOfVariableLengthValue(int position){
 
 */
 int NoteGetter::getVariableLengthValue(int position) {
-    return getLengthorValue(position, "value");
+    int value = 0;
+    int length = 0;
+    incrementLengthandValue(position, length, value);
+    return value;
 }
 
 int NoteGetter::indexOfEndOfFileMessageAt(int position) {
@@ -276,7 +273,6 @@ int NoteGetter::getNextNoteOnPosition(int position, bool isADeltaTimeEvent) {//i
     } else {
         //its an event!
         //it's an EVENT of type: 
-        
         string eventType = stringHexMid.substr(position,2); 
         if (eventType == "f0" or eventType == "f7") { //sysex event F0 or F7
             return indexOfSysexEventF0orF7(position);
