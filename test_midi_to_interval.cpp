@@ -1,56 +1,52 @@
 #include "midi_to_interval.h"
 #include <gtest/gtest.h>
 
+/*
+    Tests for use with google test
+*/
 string folder = "testData/"; 
-int allowedRange = 10; //there is an allowed range, as some files, in some formats have a different note count
-        //between my method and whatever method Logic X uses to count notes
-        //note: Logic X and Finale 2014.5 always differ on note counts due to different definitions of notes
+string folderBeethoven = folder + "BeethovenSymphony3-mids/";
+string folderMozart = folder + "magicflute-17-aria-mids/";
+
+//When testing, consider using an allowed range, as some files, in some formats have a different note count
+//between my method and whatever method Logic X uses to count notes
+//note: Logic X and Finale 2014.5 always differ on note counts due to different definitions of notes
 
 TEST(basicTest, CountingTwoTriads) {
     EXPECT_EQ(6, run(folder + "2Triads.mid"));
 }
 
-
 TEST(basicTest, CountingEightNotes) {
     EXPECT_EQ(8, run(folder + "8Notes.mid"));
 }
 
-
-TEST(resultsTest, FullPieceTest) {
-    ASSERT_NEAR(297, run(folder + "testMidi.mid"), allowedRange); 
-}
-
-TEST(resultsTest, FullPieceTest2) {
-    ASSERT_NEAR(33835, run(folder + "Beethoven.mid"), allowedRange); 
-}
-
-
-TEST(resultsTest, FullPieceTest3) {
-    ASSERT_NEAR(8993, run(folder + "Kyrie.mid"), allowedRange); 
-}
-
-
-TEST(resultsTest, FullPieceTest4) {
-    ASSERT_NEAR(5930, run(folder + "Symphony.mid"), allowedRange);                                        
-}
-
-
-TEST(resultsTest, noNoteMidiFile) {
+TEST(basicTest, noNoteMidiFile) {
     EXPECT_EQ(0, run(folder + "emptySong.mid"));
 }
 
+TEST(resultsTest, FullPieceTest) {
+    EXPECT_EQ(22252, run(folderBeethoven +"ScoreMvtI.mid"));
+}
+
+TEST(resultsTest, FullPieceTest2) {
+    EXPECT_EQ(9135, run(folderBeethoven +"ScoreMvtII.mid"));
+}
+
+TEST(resultsTest, FullPieceTest3) {
+    EXPECT_EQ(7186, run(folderBeethoven +"ScoreMvtIII.mid"));
+}
+
+TEST(resultsTest, FullPieceTest4) {
+    EXPECT_EQ(14750, run(folderBeethoven +"ScoreMvtIV.mid"));
+}
+
+TEST(resultsTest, FullPieceTest5) {
+    EXPECT_EQ(1123, run(folderMozart +"MF17-ArieScore.mid"));
+}
 
 TEST(resultsTest, problemFile1) {
-    ASSERT_NEAR(3219, run(folder +"Concerto_Grosso_op6_n05_3mov.mid"), allowedRange);
-
-}
-
-TEST(resultsTest, problemFile1LogicExported) {
-    ASSERT_NEAR(3219, run(folder +"logicGrosso.mid"), allowedRange);
-}
-
-TEST(resultsTest, problemFile2) {
-    ASSERT_NEAR(1362, run(folder +"Harpsichord_Suite_n3_Hwv428_3mov.mid"), allowedRange);
+    EXPECT_EQ(22252, run(folderBeethoven +"ScoreMvtIwithWeirdEnding.mid")); //some old files were found to have a string of 1a1a after the end of file marker, 
+    //this file was made in that style
 }
 
 int main(int argc, char **argv) {

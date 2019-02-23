@@ -12,10 +12,15 @@ using namespace std;
 #ifndef _noteGetter_h
 #define _noteGetter_h
 
+/*
+    Class noteGetter
+    Instantiated for each file analyzed
+    The main function is populateListWithNotes, which finds all the notes in a midi file and adds them to a given list
+*/
 class noteGetter {
     int runningStatus;
-    string lastStatusByte;
-    string stringHexMid; //string representation of the hex representation of the MIDI file, read in when noteGetter is instantiated
+    std::string lastStatusByte;
+    std::string stringHexMid; //string representation of the hex representation of the MIDI file, read in when noteGetter is instantiated
 public:
     int populateListWithNotes(list<int> &notes);
     noteGetter(ifstream &inFile);
@@ -25,13 +30,13 @@ private:
     int getVariableLengthValue(int position);
     int getLengthOfVariableLengthValue(int position);
     void incrementLengthandValue(int position, int& length, int& value);
-    string nextPotentialChunkType(int position);
+    std::string nextPotentialChunkType(int position);
     int indexAfterEndOfFileMessageAt(int position);
     int indexAfterMThdAt(int position);
     int indexAfterMTrkAt(int position);
     int indexAfterSysexEventF0orF7(int position);
     int indexAfterMetaEvent(int oldPosition);
-    int indexAfterNextNoteOnMessage(string eventType, int position);
+    int indexAfterNextNoteOnMessage(std::string eventType, int position);
 };
 
 #endif

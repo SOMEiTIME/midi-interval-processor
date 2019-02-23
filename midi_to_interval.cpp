@@ -1,8 +1,8 @@
 #include "midi_to_interval.h"
 #include "noteGetter.h"
 
-bool showNoteCount = false;
-bool isPrintingNoteNames = false;
+PRINT_NOTE_COUNT = false;
+PRINT_NOTE_NAMES = false;
 
 map<int,string> intNoteMap = {
     {0,"C"},
@@ -20,7 +20,8 @@ map<int,string> intNoteMap = {
     //and 12 wraps around to C again (so use mod)
 };
 
-/*  takes an int, and returns a string representation of the note name, 
+/*  
+    Takes an int, and returns a string representation of the note name, 
     exluding flats and complex spellings of simple notes (like E# for F)
 */
 string int_to_note(int x) {
@@ -46,11 +47,11 @@ int run(string fileName) {
         //populate the list with all the notes found in the given input file of type .mid
         noteCount = noteGet.populateListWithNotes(notes);
         int previous = -1;
-        if (isPrintingNoteNames){
+        if (PRINT_NOTE_NAMES){
             std::cout << "Note Names:\n";
         }
         for (int x : notes) {
-            if (isPrintingNoteNames) {
+            if (PRINT_NOTE_NAMES) {
                 std::cout << int_to_note(x) << " ";
             }
             //convert the note #s into note names, and print
@@ -66,7 +67,7 @@ int run(string fileName) {
         std::cerr << "Unable to open input file: \n" + fileName+" \n";
         exit(1);
     }
-    if (showNoteCount) {
+    if (PRINT_NOTE_COUNT) {
         std::cout << "For File: " << fileName << "\n The count of notes is " << std::dec << notes.size() << "\n"; 
     }
     ofstream outFile; 

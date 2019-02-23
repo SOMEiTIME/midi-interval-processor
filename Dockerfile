@@ -1,22 +1,22 @@
 #
-# DockerFile: create docker image for testing cube code
+# DockerFile: create docker image for testing code
 #   - start with ubuntu 16:04, add g++ and GoogleTest
 # Usage:
 #   - create:
 #       docker build ./ --tag midi_interval_tests
 #   - start if not running:
-#       docker start cube_ci
+#       docker start midi_to_interval
 #   - run with sh access (where [image] is the image id published by docker):
-#       docker run -i -t --name cube_ci [image] /bin/bash
+#       docker run -i -t --name midi_to_interval [image] /bin/bash
 #     example:
-#       docker run -i -t --name cube_ci 685b01fd837d /bin/bash
+#       docker run -i -t --name midi_to_interval 685b01fd837d /bin/bash
 #   - run the test
-#       docker run --name cube_ci 685b01fd837d /bin/bash -c 'cd ~/cube; make test'
+#       docker run --name midi_to_interval 685b01fd837d /bin/bash -c 'cd ~/midi_to_interval ; make test'
 #   - list images:
 #       docker ps -l    # last image run
 #       docker ps -a    # all images
 #   - connecting to running image:
-#       docker attach cube_ci
+#       docker attach midi_to_interval
 #
 
 FROM ubuntu:18.04

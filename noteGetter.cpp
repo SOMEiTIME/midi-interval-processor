@@ -1,10 +1,17 @@
 #include "noteGetter.h"
 
-/*
-    Class noteGetter
-    Instantiated for each file analyzed
-    The main function is populateListWithNotes, which finds all the notes in a midi file and adds them to a given list
-*/
+#include <iostream>
+#include <iomanip>
+#include <fstream>
+#include <sstream>
+#include <list>
+#include <map>
+#include <cstring>
+#include <assert.h>
+#include <string.h>
+
+using namespace std;
+
 
 /*
     Constructor for noteGetter, inFile must point to a file in the format .mid (MIDI 1.0 file format)
@@ -254,6 +261,7 @@ int noteGetter::indexAfterDeltaTimeEvent (int position) {
 /*
     Returns the position of the next note on MIDI message in the file 
     Position is the start of the current message
+    This is a type of recursive descent parser
 */
 int noteGetter::getNextNoteOnPosition(int position) {//i'd like this to be a pointer, not an actual string (longer term optimisation)
     string potentialChunkType = nextPotentialChunkType(position);
@@ -278,7 +286,6 @@ int noteGetter::getNextNoteOnPosition(int position) {//i'd like this to be a poi
         }
     }
 }
-
 
 /*
     Given an empty list of numerical representation of notes, it will fill that list of notes with the notes on messages found in the .mid file

@@ -1,4 +1,4 @@
-# makefile for cube code
+# makefile for midi_to_interval code
 
 all: midi_to_interval test_midi_to_interval
 
