@@ -1,16 +1,9 @@
-#include <iostream>
-#include <iomanip>
-#include <fstream>
-#include <sstream>
-#include <list>
-#include <map>
-#include <cstring>
-#include <assert.h>
-#include <string.h>
-using namespace std;
-
 #ifndef _noteGetter_h
 #define _noteGetter_h
+
+#include <fstream>
+#include <string>
+#include <list>
 
 /*
     Class noteGetter
@@ -22,8 +15,8 @@ class noteGetter {
     std::string lastStatusByte;
     std::string stringHexMid; //string representation of the hex representation of the MIDI file, read in when noteGetter is instantiated
 public:
-    int populateListWithNotes(list<int> &notes);
-    noteGetter(ifstream &inFile);
+    int populateListWithNotes(std::list<int> &notes);
+    noteGetter(std::ifstream &inFile);
 private:
     int getNextNoteOnPosition(int position);
     int indexAfterDeltaTimeEvent (int position);

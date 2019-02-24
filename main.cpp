@@ -1,4 +1,4 @@
-#include "midi_to_interval.h"
+#include "midiToInterval.h"
 
 /*
     This file exists to run midi_to_interval from the command line

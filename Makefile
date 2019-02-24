@@ -1,27 +1,27 @@
-# makefile for midi_to_interval code
+# makefile for midiToInterval code
 
-all: midi_to_interval test_midi_to_interval
+all: midiToInterval testMidiToInterval
 
-test: test_midi_to_interval
-	./test_midi_to_interval
+test: testMidiToInterval
+	./testMidiToInterval
 
 noteGetter.o: noteGetter.h noteGetter.cpp
 	g++ -std=c++11 -Wall -c noteGetter.cpp
 
-midi_to_interval.o: midi_to_interval.h midi_to_interval.cpp
-	g++ -std=c++11 -Wall -c midi_to_interval.cpp
+midiToInterval.o: midiToInterval.h midiToInterval.cpp
+	g++ -std=c++11 -Wall -c midiToInterval.cpp
 
-test_midi_to_interval.o: midi_to_interval.h test_midi_to_interval.cpp 
-	g++ -std=c++11 -Wall -c test_midi_to_interval.cpp
+testMidiToInterval.o: midiToInterval.h testMidiToInterval.cpp 
+	g++ -std=c++11 -Wall -c testMidiToInterval.cpp
 
-main.o: midi_to_interval.h main.cpp
+main.o: midiToInterval.h main.cpp
 	g++ -std=c++11 -Wall -c main.cpp
 
-midi_to_interval: noteGetter.o midi_to_interval.o main.o
-	g++ -std=c++11 -Wall midi_to_interval.o main.o noteGetter.o -o midi_to_interval 
+midiToInterval: midiToInterval.o noteGetter.o main.o
+	g++ -std=c++11 -Wall midiToInterval.o main.o noteGetter.o -o midiToInterval 
 
-test_midi_to_interval: midi_to_interval.o test_midi_to_interval.o noteGetter.o
-	g++ -pthread -std=c++11 -Wall midi_to_interval.o test_midi_to_interval.o noteGetter.o -lgtest_main -lgtest -lpthread -o test_midi_to_interval
+testMidiToInterval: midiToInterval.o testMidiToInterval.o noteGetter.o
+	g++ -pthread -std=c++11 -Wall midiToInterval.o testMidiToInterval.o noteGetter.o -lgtest_main -lgtest -lpthread -o testMidiToInterval
 
 clean:
-	rm -f *.o midi_to_interval test_midi_to_interval main
+	rm -f *.o midiToInterval testMidiToInterval main

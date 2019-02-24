@@ -8,10 +8,9 @@
 #include <map>
 #include <cstring>
 #include <assert.h>
-#include <string.h>
+#include <string>
 
 using namespace std;
-
 
 /*
     Constructor for noteGetter, inFile must point to a file in the format .mid (MIDI 1.0 file format)
@@ -243,7 +242,7 @@ string noteGetter::nextPotentialChunkType(int position) {
     try {
         potentialChunkType = stringHexMid.substr(position,8);
     } catch (std::exception& e) {
-        throw range_error("Got to the end of the file too early at position: "+position);
+        throw range_error("Got to the end of the file too early at position: "+to_string(position));
     }
     return potentialChunkType;
 }
