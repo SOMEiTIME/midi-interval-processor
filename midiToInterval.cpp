@@ -14,15 +14,30 @@
 
 using namespace std;
 
+/*
+    Boolean flags for printing information as the program is run
+*/
 bool PRINT_NOTE_COUNT = false;
 bool PRINT_NOTE_NAMES = false;
 
+/*
+    Prints the note count of a given file, 
+    if the flag PRINT_NOTE_COUNT is set to true
+    fileName is the name of the file that is having it's notes counted
+    notes is the list of notes found in the file
+*/
 void printNoteCount(string fileName, list<note> notes) {
     if(PRINT_NOTE_COUNT){
         std::cout << "For file: " << fileName << "\n The count of notes is " << std::dec << notes.size() << "\n"; 
     }
 }
 
+/*
+    Prints the note names found in a given file
+    if the flag PRINT_NOTE_NAMES is set to true
+    fileName is the name of the file that is having it's notes counted
+    notes is the list of notes found in the file
+*/
 void printNoteNames(string fileName, list<note> notes) {
     if (PRINT_NOTE_NAMES){
         std::cout << "Note names for file:\n";
@@ -32,12 +47,18 @@ void printNoteNames(string fileName, list<note> notes) {
     }
 }
 
+/*
+    Writes the list intervals to the outpu file stream outFile
+*/
 void writeIntervalsToFile(ofstream& outFile, list<interval> intervals) {
     for (interval x : intervals){ 
         outFile << x.toString() << " ";
     }
 }
 
+/*
+    creates a list of intervals when given a list of in order notes
+*/
 list<interval> populateListWithIntervals(list<note> notes) {
     list<interval> intervals;
     note previous(0);
@@ -55,7 +76,7 @@ list<interval> populateListWithIntervals(list<note> notes) {
 }
 
 /*
-    Run takes a file name in string form and returns the count of notes in a file, 
+    Takes a file name in string form and returns the count of notes in a file, 
     as well as potentially writing out a file called <FILENAME>_intervals.txt
     that lists the intervals in order as found in the MIDI file
 */

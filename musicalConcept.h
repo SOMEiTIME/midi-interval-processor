@@ -4,14 +4,20 @@
 #include <map>
 #include <string>
 
+/*
+    Abstract Class for the datatypes note and interval
+*/
 class musicalConcept{
     public:
-        int toInt();
-        virtual std::string toString() = 0;
+        int toInt(); //musical concepts should easily be converted into integers
+        virtual std::string toString() = 0; //used for printing values
     protected:
-        int integerRepresentation;
+        int integerRepresentation; //every musicalConcept has a numeric identifier
 };
 
+/*
+    Class to represent notes, is a musical concept
+*/
 class note: public musicalConcept{
     std::map<int,std::string> intNoteMap = {
         {0,"C"},
@@ -34,6 +40,9 @@ class note: public musicalConcept{
         std::string toString();
 };
 
+/*
+    Class to represent intervals, is a musical concept
+*/
 class interval: public musicalConcept{
     public:
         interval(note previous, note current);
