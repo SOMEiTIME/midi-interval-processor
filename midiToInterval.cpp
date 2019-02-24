@@ -38,6 +38,22 @@ void writeIntervalsToFile(ofstream& outFile, list<interval> intervals) {
     }
 }
 
+list<interval> populateListWithIntervals(list<note> notes) {
+    list<interval> intervals;
+    note previous(0);
+    bool firstItem = true;
+    for (note x : notes) {
+        //convert the note #s into interval #s
+        //populate the list of intervals
+        if (!firstItem) { //there isn't an interval if this is the first item
+            intervals.push_back(interval(previous,x)); 
+        }
+        previous = x;
+        firstItem = false;
+    } 
+    return intervals;
+}
+
 /*
     Run takes a file name in string form and returns the count of notes in a file, 
     as well as potentially writing out a file called <FILENAME>_intervals.txt
@@ -55,18 +71,7 @@ int run(string fileName) {
         noteGetter noteGet(inFile);
         //populate the list with all the notes found in the given input file of type .mid
         noteCount = noteGet.populateListWithNotes(notes);
-        note previous(0);
-        bool firstItem = true;
-        
-        for (note x : notes) {
-            //convert the note #s into interval #s
-            //populate the list of intervals
-            if (!firstItem) { //there isn't an interval if this is the first item
-                intervals.push_back(interval(previous,x)); 
-            }
-            previous = x;
-            firstItem = false;
-        } 
+        intervals = populateListWithIntervals(notes);
         inFile.close();
     } else {
         std::cerr << "Unable to open input file: \n" + fileName+" \n";

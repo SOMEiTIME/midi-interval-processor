@@ -11,7 +11,7 @@
 #     example:
 #       docker run -i -t --name midi_to_interval 685b01fd837d /bin/bash
 #   - run the test
-#       docker run --name midi_to_interval 685b01fd837d /bin/bash -c 'cd ~/midi_to_interval ; make test'
+#       docker run --name midi_to_interval midi_interval_tests /bin/bash -c 'cd ~/midi_to_interval ; make test'
 #   - list images:
 #       docker ps -l    # last image run
 #       docker ps -a    # all images
