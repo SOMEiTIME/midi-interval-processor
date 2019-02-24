@@ -9,7 +9,7 @@ do
     do
         echo "   Processing $f file..."
         # take action on each file. $f store current file name
-        ./midi_to_interval $f
+        ./midiToInterval $f
         #cat $f
     done
 done
