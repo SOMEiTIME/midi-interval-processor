@@ -17,7 +17,26 @@ using namespace std;
 bool PRINT_NOTE_COUNT = false;
 bool PRINT_NOTE_NAMES = false;
 
+void printNoteCount(string fileName, list<note> notes) {
+    if(PRINT_NOTE_COUNT){
+        std::cout << "For file: " << fileName << "\n The count of notes is " << std::dec << notes.size() << "\n"; 
+    }
+}
 
+void printNoteNames(string fileName, list<note> notes) {
+    if (PRINT_NOTE_NAMES){
+        std::cout << "Note names for file:\n";
+        for (note x : notes){
+            std::cout << x.toString() << " ";
+        }
+    }
+}
+
+void writeIntervalsToFile(ofstream& outFile, list<interval> intervals) {
+    for (interval x : intervals){ 
+        outFile << x.toString() << " ";
+    }
+}
 
 /*
     Run takes a file name in string form and returns the count of notes in a file, 
@@ -39,14 +58,7 @@ int run(string fileName) {
         note previous(0);
         bool firstItem = true;
         
-        if (PRINT_NOTE_NAMES){
-            std::cout << "Note Names:\n";
-        }
         for (note x : notes) {
-            if (PRINT_NOTE_NAMES) {
-                std::cout << x.toString() << " ";
-            }
-            //convert the note #s into note names, and print
             //convert the note #s into interval #s
             //populate the list of intervals
             if (!firstItem) { //there isn't an interval if this is the first item
@@ -60,21 +72,17 @@ int run(string fileName) {
         std::cerr << "Unable to open input file: \n" + fileName+" \n";
         exit(1);
     }
-    if (PRINT_NOTE_COUNT) {
-        std::cout << "For File: " << fileName << "\n The count of notes is " << std::dec << notes.size() << "\n"; 
-    }
     ofstream outFile; 
     outFile.open(fileName + "_intervals.txt",ios::out); 
     if (outFile.good()) {
-        for (interval x : intervals){ 
-            outFile << x.toString() << " "; //adding 288 keeps x positive
-        }
+        writeIntervalsToFile(outFile, intervals); //print out the list of intervals to the given output file
         outFile.close();
     } else {
         std::cerr << "Unable to open output file: \n" + fileName+" \n";
         exit(1);
     }
-    //print out the list of intervals to the given output file
+    printNoteCount(fileName, notes);
+    printNoteNames(fileName, notes);    
     return noteCount;
 }
 
