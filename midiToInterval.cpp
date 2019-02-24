@@ -1,5 +1,6 @@
 #include "midiToInterval.h"
 #include "noteGetter.h"
+#include "musicalConcept.h"
 
 #include <iostream>
 #include <iomanip>
@@ -16,30 +17,6 @@ using namespace std;
 bool PRINT_NOTE_COUNT = false;
 bool PRINT_NOTE_NAMES = false;
 
-static map<int,string> intNoteMap = {
-    {0,"C"},
-    {1,"C#"},
-    {2,"D"},
-    {3,"D#"},
-    {4,"E"},
-    {5,"F"},
-    {6,"F#"},
-    {7,"G"},
-    {8,"G#"},
-    {9,"A"},
-    {10,"A#"},
-    {11,"B"},
-    //and 12 wraps around to C again (so use mod)
-};
-
-/*  
-    Takes an int, and returns a string representation of the note name, 
-    exluding flats and complex spellings of simple notes (like E# for F)
-*/
-string intToNote(int x) {
-    int remainder = x % 12;
-    return intNoteMap[remainder];
-}
 
 
 /*
@@ -53,27 +30,30 @@ int run(string fileName) {
     //open the input file (has to be a MIDI file)
     inFile.open(fileName,ios::binary);
     int noteCount = 0;
-    list<int> notes; //the list of notes that are found in the file
-    list<int> intervals; //the list of intervals of the notes found in the file
+    list<note> notes; //the list of notes that are found in the file
+    list<interval> intervals; //the list of intervals of the notes found in the file
     if (inFile.good()) {
         noteGetter noteGet(inFile);
         //populate the list with all the notes found in the given input file of type .mid
         noteCount = noteGet.populateListWithNotes(notes);
-        int previous = -1;
+        note previous(0);
+        bool firstItem = true;
+        
         if (PRINT_NOTE_NAMES){
             std::cout << "Note Names:\n";
         }
-        for (int x : notes) {
+        for (note x : notes) {
             if (PRINT_NOTE_NAMES) {
-                std::cout << intToNote(x) << " ";
+                std::cout << x.toString() << " ";
             }
             //convert the note #s into note names, and print
             //convert the note #s into interval #s
             //populate the list of intervals
-            if (previous != -1) { //there isn't an interval if this is the first item
-                intervals.push_back(abs(x-previous)); //putting in abs means B to C and C to B are the same interval, which they are
+            if (!firstItem) { //there isn't an interval if this is the first item
+                intervals.push_back(interval(previous,x)); 
             }
-            previous = x;   
+            previous = x;
+            firstItem = false;
         } 
         inFile.close();
     } else {
@@ -86,8 +66,8 @@ int run(string fileName) {
     ofstream outFile; 
     outFile.open(fileName + "_intervals.txt",ios::out); 
     if (outFile.good()) {
-        for (int x : intervals){ 
-            outFile << std::dec << (x+288) % 12 << " "; //adding 288 keeps x positive
+        for (interval x : intervals){ 
+            outFile << x.toString() << " "; //adding 288 keeps x positive
         }
         outFile.close();
     } else {

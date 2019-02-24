@@ -1,6 +1,8 @@
 #ifndef _noteGetter_h
 #define _noteGetter_h
 
+#include "musicalConcept.h"
+
 #include <fstream>
 #include <string>
 #include <list>
@@ -15,7 +17,7 @@ class noteGetter {
     std::string lastStatusByte;
     std::string stringHexMid; //string representation of the hex representation of the MIDI file, read in when noteGetter is instantiated
 public:
-    int populateListWithNotes(std::list<int> &notes);
+    int populateListWithNotes(std::list<note> &notes);
     noteGetter(std::ifstream &inFile);
 private:
     int getNextNoteOnPosition(int position);

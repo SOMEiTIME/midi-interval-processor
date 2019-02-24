@@ -1,4 +1,5 @@
 #include "noteGetter.h"
+#include "musicalConcept.h"
 
 #include <iostream>
 #include <iomanip>
@@ -9,6 +10,7 @@
 #include <cstring>
 #include <assert.h>
 #include <string>
+
 
 using namespace std;
 
@@ -289,7 +291,7 @@ int noteGetter::getNextNoteOnPosition(int position) {//i'd like this to be a poi
 /*
     Given an empty list of numerical representation of notes, it will fill that list of notes with the notes on messages found in the .mid file
  */
-int noteGetter::populateListWithNotes(list<int> &notes) {
+int noteGetter::populateListWithNotes(list<note> &notes) {
     int count = 0;
     int position = 0;
     position = getNextNoteOnPosition(position);  
@@ -306,7 +308,7 @@ int noteGetter::populateListWithNotes(list<int> &notes) {
         //exlude the false notes that are lower than the bottom of a piano
         if (noteVelInt >= 1 and noteVelInt <=127 and noteNumInt >= 0 and noteNumInt <= 127) {
         //exlude midi messages that don't make sense
-            notes.push_back(noteNumInt);
+            notes.push_back(note(noteNumInt));
             count += 1;
         } 
          //we just processed a note on message, and so the next expected event is a delta time event (after 6 chars (or 3 bytes) of midi note on message)
