@@ -10,6 +10,7 @@ using namespace std;
 string folder = "testData/"; 
 string folderBeethoven = folder + "BeethovenSymphony3-mids/";
 string folderMozart = folder + "magicflute-17-aria-mids/";
+string folderBadMidi = "badMidi/";
 
 //When testing, consider using an allowed range, as some files, in some formats have a different note count
 //between my method and whatever method Logic X uses to count notes
@@ -51,6 +52,8 @@ TEST(resultsTest, problemFile1) {
     EXPECT_EQ(22252, run(folderBeethoven +"ScoreMvtIwithWeirdEnding.mid")); //some old files were found to have a string of 1a1a after the end of file marker, 
     //this file was made in that style
 }
+
+
 
 int main(int argc, char **argv) {
    ::testing::InitGoogleTest(&argc, argv);
