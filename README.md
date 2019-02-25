@@ -1,4 +1,4 @@
-# projectMidi
+# midi-interval-processor
 for c++11
 
 ##  Usage
