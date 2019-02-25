@@ -2,14 +2,18 @@
 for c++11
 
 ##  Usage
-To run on one file:
+Run on one file:
 ```
 make midiToInterval
 ./midiToInterval inputFileName 
 ```
-To run with all tests
+Run with all tests:
 ```
 docker build ./ --tag midiIntervalTests
+```
+Process midi data in a directory called ClassicalComposers, with the data grouped into directories by composer name:
+```
+bash processMIDICorpus.sh
 ```
 
 ## Citations for Test Data
