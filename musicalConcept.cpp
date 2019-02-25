@@ -1,3 +1,9 @@
+/*
+    Developed for use in midi-interval-processer 
+    Benjamin Hasker
+    2019
+*/
+
 #include <string>
 #include "musicalConcept.h"
 using namespace std;

@@ -1,3 +1,9 @@
+/*
+    Developed for use in midi-interval-processer 
+    Benjamin Hasker
+    2019
+*/
+
 #ifndef _musicalConcept_h
 #define _musicalConcept_h
 

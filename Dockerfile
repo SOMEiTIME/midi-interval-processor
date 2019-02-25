@@ -1,4 +1,10 @@
 #
+#   Developed for use in midi-interval-processer 
+#   Benjamin Hasker
+#   2019
+#
+
+#
 # DockerFile: create docker image for testing code
 #   - start with ubuntu 16:04, add g++ and GoogleTest
 # Usage:

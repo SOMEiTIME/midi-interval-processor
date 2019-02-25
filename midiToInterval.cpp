@@ -1,3 +1,9 @@
+/*
+    Developed for use in midi-interval-processer 
+    Benjamin Hasker
+    2019
+*/
+
 #include "midiToInterval.h"
 #include "noteGetter.h"
 #include "musicalConcept.h"

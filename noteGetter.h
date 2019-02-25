@@ -1,3 +1,9 @@
+/*
+    Developed for use in midi-interval-processer 
+    Benjamin Hasker
+    2019
+*/
+
 #ifndef _noteGetter_h
 #define _noteGetter_h
 

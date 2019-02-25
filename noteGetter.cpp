@@ -1,3 +1,9 @@
+/*
+    Developed for use in midi-interval-processer 
+    Benjamin Hasker
+    2019
+*/
+
 #include "noteGetter.h"
 #include "musicalConcept.h"
 
@@ -289,7 +295,7 @@ int noteGetter::populateListWithNotes(list<note> &notes) {
         int noteNumInt = std::stoul(noteNumHex, nullptr, 16); //converts the string note on value in hex to an int
         int noteVelInt = std::stoul(velocityNumHex, nullptr, 16);
         //exlude the false notes that are lower than the bottom of a piano
-        if (noteVelInt >= 1 and noteVelInt <=127 and noteNumInt >= 0 and noteNumInt <= 127) {//exlude midi messages that don't make sense
+        if (noteVelInt >= 1 and noteVelInt <= 127 and noteNumInt >= 0 and noteNumInt <= 127) {//exlude midi messages that don't make sense
             notes.push_back(note(noteNumInt));
             count += 1;
         } 

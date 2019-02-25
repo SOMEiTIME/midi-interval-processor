@@ -1,4 +1,9 @@
 #!/bin/bash
+#
+#   Developed for use in midi-interval-processer 
+#   Benjamin Hasker
+#   2019
+#
 
 #
 # Processes and collates the intervalic content of midi files, and groups that data into a 
