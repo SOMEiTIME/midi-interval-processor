@@ -15,7 +15,7 @@
 class noteGetter {
     int runningStatus;
     std::string lastStatusByte;
-    std::string stringHexMid; //string representation of the hex representation of the MIDI file, read in when noteGetter is instantiated
+    std::string stringHexMid; //String representation of the hex representation of the MIDI file, read in when noteGetter is instantiated
 public:
     int populateListWithNotes(std::list<note> &notes);
     noteGetter(std::ifstream &inFile);

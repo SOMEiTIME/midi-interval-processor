@@ -1,4 +1,14 @@
 #!/bin/bash
+
+#
+# Processes and collates the intervalic content of midi files, and groups that data into a 
+# folder "Results" for further processing
+# These results will be of the format $composerName_intervals.txt
+#
+# Assumes that there is a folder in the directory called ClassicalComposers that is full of
+# MIDI files, grouped into directories by composer name
+#
+
 DIR=ClassicalComposers
 resultFolder=Results
 

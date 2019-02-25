@@ -3,13 +3,8 @@
 #include "musicalConcept.h"
 
 #include <iostream>
-#include <iomanip>
 #include <fstream>
-#include <sstream>
 #include <list>
-#include <map>
-#include <cstring>
-#include <assert.h>
 #include <string>
 
 using namespace std;
@@ -64,9 +59,9 @@ list<interval> populateListWithIntervals(list<note> notes) {
     note previous(0);
     bool firstItem = true;
     for (note x : notes) {
-        //convert the note #s into interval #s
-        //populate the list of intervals
-        if (!firstItem) { //there isn't an interval if this is the first item
+        //Convert the note #s into interval #s
+        //Populate the list of intervals
+        if (!firstItem) { //There isn't an interval if this is the first item
             intervals.push_back(interval(previous,x)); 
         }
         previous = x;
@@ -83,14 +78,13 @@ list<interval> populateListWithIntervals(list<note> notes) {
 int run(string fileName) {
 
     ifstream inFile;
-    //open the input file (has to be a MIDI file)
-    inFile.open(fileName,ios::binary);
+    inFile.open(fileName,ios::binary); //Open the input file (must be a MIDI file)
     int noteCount = 0;
-    list<note> notes; //the list of notes that are found in the file
-    list<interval> intervals; //the list of intervals of the notes found in the file
+    list<note> notes; //Will be the list of notes that are found in the file
+    list<interval> intervals; //Will bethe list of intervals of the notes found in the file
     if (inFile.good()) {
         noteGetter noteGet(inFile);
-        //populate the list with all the notes found in the given input file of type .mid
+        //Populate the list with all the notes found in the given input file of type .mid
         noteCount = noteGet.populateListWithNotes(notes);
         intervals = populateListWithIntervals(notes);
         inFile.close();
@@ -101,7 +95,7 @@ int run(string fileName) {
     ofstream outFile; 
     outFile.open(fileName + "_intervals.txt",ios::out); 
     if (outFile.good()) {
-        writeIntervalsToFile(outFile, intervals); //print out the list of intervals to the given output file
+        writeIntervalsToFile(outFile, intervals); //Print out the list of intervals to the given output file
         outFile.close();
     } else {
         std::cerr << "Unable to open output file: \n" + fileName+" \n";

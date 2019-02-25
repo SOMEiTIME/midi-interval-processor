@@ -49,11 +49,9 @@ TEST(resultsTest, FullPieceTest5) {
 }
 
 TEST(resultsTest, problemFile1) {
-    EXPECT_EQ(22252, run(folderBeethoven +"ScoreMvtIwithWeirdEnding.mid")); //some old files were found to have a string of 1a1a after the end of file marker, 
-    //this file was made in that style
+    EXPECT_EQ(22252, run(folderBeethoven +"ScoreMvtIwithWeirdEnding.mid")); //Some old files were found to have a series of bytes 1a1a after the end of file marker, 
+    //This file was modified to be in that style
 }
-
-
 
 int main(int argc, char **argv) {
    ::testing::InitGoogleTest(&argc, argv);

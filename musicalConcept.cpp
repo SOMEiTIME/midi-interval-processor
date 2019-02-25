@@ -1,4 +1,3 @@
-#include <map>
 #include <string>
 #include "musicalConcept.h"
 using namespace std;
@@ -23,7 +22,7 @@ string note::intToNote(int x) {
     Constructor for the note datatype
 */
 note::note(int stepValue){
-    integerRepresentation = stepValue % 12; //there are only 12 possible note numbers
+    integerRepresentation = stepValue % 12; //There are only 12 possible note numbers
 }
 
 /*
