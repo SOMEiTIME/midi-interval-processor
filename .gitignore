@@ -1,0 +1,5 @@
+# build outputs
+*.o
+midiToInterval
+testMidiToInterval
+.DS_Store
