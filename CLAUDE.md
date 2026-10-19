@@ -26,6 +26,9 @@ make clean
 - Tests assert on `run()`'s returned note count and on the output file, so changing the output format will break the `resultsTest` cases.
 - Test data comes from mutopiaproject.org; keep the citations in the README when adding pieces.
 
+## Public repo
+This repo is public. Don't commit personal details (full name, email, local paths, device names), other people's contact info, or secrets. Ask first if a task needs one.
+
 ## Git workflow
 - Never commit directly to `master`. Before making any commit, create a branch named for the work (e.g. `feature/add-glitch-mode`, `fix/header-parsing`, `docs/update-notes`) and commit there.
 - If you're on `master` when asked to commit, switch to a new branch first.
