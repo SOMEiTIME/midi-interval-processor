@@ -1,15 +1,15 @@
 # midi-interval-processor
-for c++11
+C++11 command-line tool that reads a MIDI file and writes the intervals between its notes to `<FILENAME>_intervals.txt`.
 
-##  Usage
+## Usage
 Run on one file:
 ```
 make midiToInterval
-./midiToInterval inputFileName 
+./midiToInterval inputFileName
 ```
-Run with all tests:
+Build and run all tests in Docker:
 ```
-docker build ./ --tag midiIntervalTests
+docker build ./ --tag midi_interval_tests
 ```
 Process midi data in a directory called ClassicalComposers, with the data grouped into directories by composer name:
 ```
@@ -24,7 +24,7 @@ https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=249
 
 Composer: L. V. Beethoven (1770–1827)
 
-Maintainer: Jay Anderson    
+Maintainer: Jay Anderson
 
 Contact: horndude77 (at) gmail.com
 
@@ -35,7 +35,7 @@ https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=1655
 
 Composer: W. A. Mozart (1756–1791)
 
-Maintainer: Deborah Lowrey  
+Maintainer: Deborah Lowrey
 
 Contact: drlowrey (at) karmaresources.com
 
