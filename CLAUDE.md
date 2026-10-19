@@ -20,7 +20,7 @@ make clean
 - `musicalConcept.{h,cpp}` — abstract `musicalConcept` base with `note` and `interval` subclasses (int representation plus `toString()`).
 
 ## Conventions
-- Every file starts with the header block comment ("Developed for use in midi-interval-processer / Benjamin Hasker / 2019"). Copy it into new files.
+- Every file starts with a header block comment. Copy it from `main.cpp` into new files.
 - Comment block above each function describing what it does; camelCase for functions and variables, lowercase class names.
 - Adding a source file means adding its `.o` rule and linking it in both `midiToInterval` and `testMidiToInterval` in the Makefile (rules are explicit, not pattern-based).
 - Tests assert on `run()`'s returned note count and on the output file, so changing the output format will break the `resultsTest` cases.
