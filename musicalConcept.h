@@ -17,7 +17,7 @@ class musicalConcept{
     public:
         int toInt(); //musical concepts should easily be converted into integers
         virtual std::string toString() = 0; //used for printing values
-        virtual ~musicalConcept() = default; //subclasses are destroyed through the base type
+        virtual ~musicalConcept() = default; //so a note or interval is safe to delete through a musicalConcept pointer
     protected:
         int integerRepresentation; //every musicalConcept has a numeric identifier
 };
