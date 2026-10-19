@@ -68,7 +68,7 @@ void noteGetter::incrementLengthandValue(int position, int& length, int& value){
         //convert this string representation in hex to int variable, then convert that int into binary (this is easy, as ints are stored in binary)
         try {
             deltaPartInt = std::stoul(deltaPart, nullptr, 16); //converts the string note on value in hex to an int
-        } catch (exception(stoul)) {
+        } catch (const std::exception&) {
             std::cerr << "Got to the end of the file\n";
             return;
         }
