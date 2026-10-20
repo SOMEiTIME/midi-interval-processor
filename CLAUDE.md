@@ -1,6 +1,6 @@
 # midi-interval-processor
 
-C++11 command-line tool that reads a MIDI file, computes the intervals between notes, and writes them to `<FILENAME>_intervals.txt`. Meant for studying the intervallic content of classical composers (2019 project).
+C++17 command-line tool that reads a MIDI file, computes the intervals between notes, and writes them to `<FILENAME>_intervals.txt`. Meant for studying the intervallic content of classical composers (2019 project).
 
 ## Build and test
 ```
@@ -9,7 +9,7 @@ make midiToInterval      # build the CLI
 make test                # builds and runs the GoogleTest suite (needs gtest installed)
 make clean
 ```
-- Compiler flags: `g++ -std=c++11 -Wall`. Keep the code warning-free and C++11 compatible (no C++14/17 features).
+- Compiler flags: `-std=c++17 -Wall` (set once as `CXXFLAGS` in the Makefile). Keep the code warning-free. C++17 because current GoogleTest requires it.
 - Tests are in `testMidiToInterval.cpp` and use fixtures in `testData/`. The Dockerfile (Ubuntu 18.04 + gtest) builds the project and runs `make test`, so use it if gtest isn't available locally: `docker build ./ --tag midi_interval_tests`.
 - `processMIDICorpus.sh` batch-runs the CLI over `ClassicalComposers/<composer>/*.mid` and concatenates results into `ClassicalComposers/Results/<composer>_all_intervals.txt`. That folder isn't in the repo; it must exist before running.
 
