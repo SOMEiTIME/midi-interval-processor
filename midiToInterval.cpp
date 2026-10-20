@@ -10,6 +10,7 @@
 #include <iostream>
 #include <fstream>
 #include <list>
+#include <stdexcept>
 #include <string>
 
 using namespace std;
@@ -40,7 +41,7 @@ void printNoteCount(string fileName, list<note> notes) {
 */
 void printNoteNames(string fileName, list<note> notes) {
     if (PRINT_NOTE_NAMES){
-        std::cout << "Note names for file:\n";
+        std::cout << "Note names for file: " << fileName << "\n";
         for (note x : notes){
             std::cout << x.toString() << " ";
         }
@@ -79,6 +80,7 @@ list<interval> populateListWithIntervals(list<note> notes) {
     Takes a file name in string form and returns the count of notes in a file, 
     as well as potentially writing out a file called <FILENAME>_intervals.txt
     that lists the intervals in order as found in the MIDI file
+    Throws std::runtime_error if a file can't be opened or the input isn't a readable MIDI file
 */
 int run(string fileName) {
 
@@ -90,12 +92,15 @@ int run(string fileName) {
     if (inFile.good()) {
         noteGetter noteGet(inFile);
         //Populate the list with all the notes found in the given input file of type .mid
-        noteCount = noteGet.populateListWithNotes(notes);
+        try {
+            noteCount = noteGet.populateListWithNotes(notes);
+        } catch (const logic_error&) { //out_of_range or invalid_argument from reading past the end of the data
+            throw runtime_error("Truncated or malformed MIDI file: " + fileName);
+        }
         intervals = populateListWithIntervals(notes);
         inFile.close();
     } else {
-        std::cerr << "Unable to open input file: \n" + fileName+" \n";
-        exit(1);
+        throw runtime_error("Unable to open input file: " + fileName);
     }
     ofstream outFile; 
     outFile.open(fileName + "_intervals.txt",ios::out); 
@@ -103,8 +108,7 @@ int run(string fileName) {
         writeIntervalsToFile(outFile, intervals); //Print out the list of intervals to the given output file
         outFile.close();
     } else {
-        std::cerr << "Unable to open output file: \n" + fileName+" \n";
-        exit(1);
+        throw runtime_error("Unable to open output file: " + fileName + "_intervals.txt");
     }
     printNoteCount(fileName, notes);
     printNoteNames(fileName, notes);    

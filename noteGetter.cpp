@@ -9,9 +9,9 @@
 #include "noteGetter.h"
 #include "musicalConcept.h"
 
-#include <iostream>
 #include <sstream>
 #include <list>
+#include <stdexcept>
 #include <string>
 
 using namespace std;
@@ -29,9 +29,8 @@ noteGetter::noteGetter(ifstream &inFile) {
     stringstream buffer;
     stringstream tempBitForFormatting;
     char smallPart;
-    while (!inFile.eof()) {
-        //read returns unformatted data in the size of one character so M, then t, then H, then D
-        inFile.read(&smallPart,1); 
+    //get returns unformatted data in the size of one character so M, then t, then H, then D
+    while (inFile.get(smallPart)) {
         tempBitForFormatting.str("");  //This clears the tempBitForFormatting
         tempBitForFormatting << std::hex << (int) smallPart; //casts each character to an int 
                                             //converts that int into a sting
@@ -67,9 +66,8 @@ void noteGetter::incrementLengthandValue(int position, int& length, int& value){
         //convert this string representation in hex to int variable, then convert that int into binary (this is easy, as ints are stored in binary)
         try {
             deltaPartInt = std::stoul(deltaPart, nullptr, 16); //converts the string note on value in hex to an int
-        } catch (const std::exception&) {
-            std::cerr << "Got to the end of the file\n";
-            return;
+        } catch (const std::invalid_argument&) {
+            throw std::out_of_range("Variable length value runs past the end of the file");
         }
         const unsigned char msbBitMask = 128; //0000 0001
         //1111 0101 Would be not the end of the delta time event
@@ -209,7 +207,8 @@ int noteGetter::indexAfterNextNoteOnMessage(string eventType, int position) {
         //else, handle like any other midi message (so skip over it by 4 or 6 characters)
         //cn and dn daya bytes are 2 characters long
         //others are 4 characters long
-        if (statusType == "c" or statusType == "d") {
+        string runningStatusType = lastStatusByte.substr(0,1); //statusType is a data byte here, so check the remembered status
+        if (runningStatusType == "c" or runningStatusType == "d") {
             return indexAfterDeltaTimeEvent(position + 2); 
         } else {
             return indexAfterDeltaTimeEvent(position + 4); 
@@ -283,6 +282,9 @@ int noteGetter::getNextNoteOnPosition(int position) {//i'd like this to be a poi
     Given an empty list of numerical representation of notes, it will fill that list of notes with the notes on messages found in the .mid file
  */
 int noteGetter::populateListWithNotes(list<note> &notes) {
+    if (stringHexMid.compare(0, 8, "4d546864") != 0) { //every MIDI file starts with an MThd chunk
+        throw runtime_error("Not a MIDI file (no MThd header)");
+    }
     int count = 0;
     int position = 0;
     position = getNextNoteOnPosition(position);  
