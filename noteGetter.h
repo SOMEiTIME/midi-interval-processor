@@ -1,6 +1,5 @@
 /*
-    Developed for use in midi-interval-processer 
-    Benjamin Hasker
+    Developed for use in midi-interval-processor
     2019
 */
 
