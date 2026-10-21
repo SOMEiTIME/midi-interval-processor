@@ -40,6 +40,9 @@ string note::toString(){
 /*
     Constructor for the interval data type
     When given two notes, will create interval between those two
+    This is a deliberately quick measure, applied the same way to every pair: both notes are already
+    pitch classes (0-11, octave dropped), and this takes the distance between those numbers.
+    So it isn't the musical interval: B3 to C4 and C4 to C#4 are both a semitone up, but come out as 11 and 1
 */
 interval::interval(note previous, note current){
     int actualInterval = abs(current.toInt()-previous.toInt()); //putting in abs means notes B to C and notes C to B are the same interval, which they are

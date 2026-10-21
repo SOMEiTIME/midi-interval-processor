@@ -1,7 +1,7 @@
 # makefile for midiToInterval code
 
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall
+CXXFLAGS = -std=c++17 -Wall -Wextra
 
 all: midiToInterval testMidiToInterval
 
