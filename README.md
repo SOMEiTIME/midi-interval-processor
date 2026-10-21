@@ -1,5 +1,5 @@
 # midi-interval-processor
-C++11 command-line tool that reads a MIDI file and writes the intervals between its notes to `<FILENAME>_intervals.txt`.
+C++17 command-line tool that reads a MIDI file and writes the intervals between its notes to `<FILENAME>_intervals.txt`.
 
 ## Usage
 Run on one file:
