@@ -1,6 +1,5 @@
 /*
-    Developed for use in midi-interval-processer 
-    Benjamin Hasker
+    Developed for use in midi-interval-processor
     2019
 
     For detailed information on the MIDI file format, refer to: https://www.csie.ntu.edu.tw/~r92092/ref/midi/,

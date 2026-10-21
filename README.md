@@ -26,8 +26,6 @@ Composer: L. V. Beethoven (1770–1827)
 
 Maintainer: Jay Anderson
 
-Contact: horndude77 (at) gmail.com
-
 Copyright: Creative Commons Attribution-ShareAlike 3.0 
 
 ### Die Zauberflöte (The Magic Flute) - No. 4 Arie
@@ -37,8 +35,4 @@ Composer: W. A. Mozart (1756–1791)
 
 Maintainer: Deborah Lowrey
 
-Contact: drlowrey (at) karmaresources.com
-
 Copyright: Public Domain
-
-
