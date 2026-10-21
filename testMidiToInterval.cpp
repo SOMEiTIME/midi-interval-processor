@@ -8,7 +8,6 @@
 #include <gtest/gtest.h>
 
 #include <cstdint>
-#include <filesystem>
 #include <fstream>
 #include <initializer_list>
 #include <sstream>
@@ -53,10 +52,10 @@ bytes midiFile(initializer_list<bytes> tracks) {
 }
 
 /*
-    Writes contents to a file in the system temp directory and returns its path
+    Writes contents to testData/built_<name> (gitignored) and returns its path
 */
-string writeTempFile(const string& name, const bytes& contents) {
-    string path = (filesystem::temp_directory_path() / name).string();
+string writeTestFile(const string& name, const bytes& contents) {
+    string path = folder + "built_" + name;
     ofstream out(path, ios::binary);
     out.write((const char*)contents.data(), contents.size());
     return path;
@@ -124,6 +123,7 @@ TEST(resultsTest, FullPieceTest5) {
 }
 
 TEST(resultsTest, problemFile1) {
+    run(folderBeethoven + "ScoreMvtI.mid"); //writes the intervals file compared against below
     EXPECT_EQ(22252, run(folderBeethoven +"ScoreMvtIwithWeirdEnding.mid")); //Some old files were found to have a series of bytes 1a1a after the end of file marker,
     //This file was modified to be in that style
     EXPECT_EQ(readIntervals(folderBeethoven + "ScoreMvtI.mid"), readIntervals(folderBeethoven + "ScoreMvtIwithWeirdEnding.mid"));
@@ -131,48 +131,48 @@ TEST(resultsTest, problemFile1) {
 
 TEST(intervalTest, NotesAreReducedToPitchClassBeforeTakingTheDistance) {
     //B3 C4 B3 C4 C#4: the semitones across C come out as 11, the one above C as 1 (see interval::interval)
-    string path = writeTempFile("semitones.mid", midiFile({track({
+    string path = writeTestFile("semitones.mid", midiFile({track({
         {0x00, 0x90, 59, 0x40}, {0x00, 60, 0x40}, {0x00, 59, 0x40}, {0x00, 60, 0x40}, {0x00, 61, 0x40}, endOfTrack})}));
     EXPECT_EQ(5, run(path));
     EXPECT_EQ("11 11 11 1 ", readIntervals(path));
 }
 
 TEST(intervalTest, OctaveIsZero) {
-    string path = writeTempFile("octave.mid", midiFile({track({{0x00, 0x90, 60, 0x40}, {0x00, 0x90, 72, 0x40}, endOfTrack})}));
+    string path = writeTestFile("octave.mid", midiFile({track({{0x00, 0x90, 60, 0x40}, {0x00, 0x90, 72, 0x40}, endOfTrack})}));
     EXPECT_EQ(2, run(path));
     EXPECT_EQ("0 ", readIntervals(path));
 }
 
 TEST(parsingTest, NoteOnWithZeroVelocityIsANoteOff) {
-    string path = writeTempFile("noteOff.mid", midiFile({track({
+    string path = writeTestFile("noteOff.mid", midiFile({track({
         {0x00, 0x90, 60, 0x40}, {0x60, 0x90, 60, 0x00}, {0x00, 0x80, 62, 0x40}, {0x00, 0x90, 64, 0x40}, endOfTrack})}));
     EXPECT_EQ(2, run(path));
     EXPECT_EQ("4 ", readIntervals(path));
 }
 
 TEST(parsingTest, RunningStatusNoteOn) {
-    string path = writeTempFile("runningNoteOn.mid", midiFile({track({{0x00, 0x90, 60, 0x40}, {0x00, 62, 0x40}, {0x00, 64, 0x40}, endOfTrack})}));
+    string path = writeTestFile("runningNoteOn.mid", midiFile({track({{0x00, 0x90, 60, 0x40}, {0x00, 62, 0x40}, {0x00, 64, 0x40}, endOfTrack})}));
     EXPECT_EQ(3, run(path));
     EXPECT_EQ("2 2 ", readIntervals(path));
 }
 
 TEST(parsingTest, RunningStatusProgramChange) {
     //c0 takes one data byte, so the repeated program change (00 06) is only 2 bytes long
-    string path = writeTempFile("runningProgram.mid", midiFile({track({
+    string path = writeTestFile("runningProgram.mid", midiFile({track({
         {0x00, 0xc0, 0x05}, {0x00, 0x06}, {0x00, 0x90, 60, 0x40}, {0x00, 62, 0x40}, endOfTrack})}));
     EXPECT_EQ(2, run(path));
     EXPECT_EQ("2 ", readIntervals(path));
 }
 
 TEST(parsingTest, RunningStatusChannelPressure) {
-    string path = writeTempFile("runningPressure.mid", midiFile({track({
+    string path = writeTestFile("runningPressure.mid", midiFile({track({
         {0x00, 0xd0, 0x10}, {0x00, 0x20}, {0x00, 0x90, 60, 0x40}, {0x00, 67, 0x40}, endOfTrack})}));
     EXPECT_EQ(2, run(path));
     EXPECT_EQ("7 ", readIntervals(path));
 }
 
 TEST(parsingTest, MetaAndSysexEventsAreSkipped) {
-    string path = writeTempFile("metaSysex.mid", midiFile({track({
+    string path = writeTestFile("metaSysex.mid", midiFile({track({
         {0x00, 0xff, 0x03, 0x04, 'P', 'i', 'a', 'n'}, //track name
         {0x00, 0xf0, 0x03, 0x7e, 0x09, 0xf7}, //sysex
         {0x00, 0x90, 60, 0x40}, {0x00, 0xb0, 0x07, 0x64}, {0x00, 0x90, 65, 0x40}, endOfTrack})}));
@@ -181,7 +181,7 @@ TEST(parsingTest, MetaAndSysexEventsAreSkipped) {
 }
 
 TEST(parsingTest, TracksAreJoinedInFileOrder) {
-    string path = writeTempFile("twoTracks.mid", midiFile({
+    string path = writeTestFile("twoTracks.mid", midiFile({
         track({{0x00, 0x90, 60, 0x40}, {0x00, 64, 0x40}, endOfTrack}),
         track({{0x00, 0x91, 67, 0x40}, endOfTrack})}));
     EXPECT_EQ(3, run(path));
@@ -193,18 +193,18 @@ TEST(errorTest, MissingFileThrows) {
 }
 
 TEST(errorTest, EmptyFileThrows) {
-    EXPECT_THROW(run(writeTempFile("zeroBytes.mid", {})), runtime_error);
+    EXPECT_THROW(run(writeTestFile("zeroBytes.mid", {})), runtime_error);
 }
 
 TEST(errorTest, NonMidiFileThrows) {
     string text = "hello, this is not a MIDI file";
-    EXPECT_THROW(run(writeTempFile("notMidi.mid", bytes(text.begin(), text.end()))), runtime_error);
+    EXPECT_THROW(run(writeTestFile("notMidi.mid", bytes(text.begin(), text.end()))), runtime_error);
 }
 
 TEST(errorTest, TruncatedFileThrows) {
     bytes file = midiFile({track({{0x00, 0x90, 60, 0x40}, {0x00, 62, 0x40}, {0x00, 64, 0x40}, endOfTrack})});
     file.resize(file.size() - 6); //cut off partway through the last note
-    EXPECT_THROW(run(writeTempFile("truncated.mid", file)), runtime_error);
+    EXPECT_THROW(run(writeTestFile("truncated.mid", file)), runtime_error);
 }
 
 int main(int argc, char **argv) {

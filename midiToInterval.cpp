@@ -92,10 +92,14 @@ int run(string fileName) {
     if (inFile.good()) {
         noteGetter noteGet(inFile);
         //Populate the list with all the notes found in the given input file of type .mid
+        //Reading past the end of the data shows up as out_of_range (substr) or invalid_argument (stoi/stoul on an empty string)
+        string malformed = "Truncated or malformed MIDI file: " + fileName;
         try {
             noteCount = noteGet.populateListWithNotes(notes);
-        } catch (const logic_error&) { //out_of_range or invalid_argument from reading past the end of the data
-            throw runtime_error("Truncated or malformed MIDI file: " + fileName);
+        } catch (const out_of_range&) {
+            throw runtime_error(malformed);
+        } catch (const invalid_argument&) {
+            throw runtime_error(malformed);
         }
         intervals = populateListWithIntervals(notes);
         inFile.close();

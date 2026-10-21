@@ -4,5 +4,6 @@ midiToInterval
 testMidiToInterval
 .DS_Store
 
-# written next to each input by run() and the tests
+# written by run() and the tests
 *_intervals.txt
+testData/built_*

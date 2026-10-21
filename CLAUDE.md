@@ -10,7 +10,7 @@ make test                # builds and runs the GoogleTest suite (needs gtest ins
 make clean
 ```
 - Compiler flags: `-std=c++17 -Wall -Wextra` (set once as `CXXFLAGS` in the Makefile). Keep the code warning-free. C++17 because current GoogleTest requires it.
-- Tests are in `testMidiToInterval.cpp`. They use the pieces in `testData/` plus small MIDI files built from bytes in the test itself (`midiFile`, `track`) and written to the temp directory. The Dockerfile (Ubuntu 18.04 + gtest) builds the project and runs `make test`, so use it if gtest isn't available locally: `docker build ./ --tag midi_interval_tests`.
+- Tests are in `testMidiToInterval.cpp`. They use the pieces in `testData/` plus small MIDI files built from bytes in the test itself (`midiFile`, `track`) and written to `testData/built_*`. The Dockerfile (Ubuntu 18.04 + gtest) builds the project and runs `make test`, so use it if gtest isn't available locally: `docker build ./ --tag midi_interval_tests`.
 - `processMIDICorpus.sh` batch-runs the CLI over `ClassicalComposers/<composer>/*.mid` and concatenates results into `ClassicalComposers/Results/<composer>_all_intervals.txt`. That folder isn't in the repo; it must exist before running.
 
 ## Layout
