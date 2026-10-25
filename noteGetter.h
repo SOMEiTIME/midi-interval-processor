@@ -13,14 +13,11 @@
 #include <list>
 
 /*
-    Class noteGetter
-    Instantiated for each file analyzed
-    The main function is populateListWithNotes, which finds all the notes in a midi file and adds them to a given list
+    Finds the notes in one MIDI file, through populateListWithNotes
 */
 class noteGetter {
-    int runningStatus;
-    std::string lastStatusByte;
-    std::string stringHexMid; //String representation of the hex representation of the MIDI file, read in when noteGetter is instantiated
+    std::string lastStatusByte; //status byte of the last MIDI event, for running status ("" outside one)
+    std::string stringHexMid; //the whole MIDI file as hex, read in when noteGetter is instantiated
 public:
     int populateListWithNotes(std::list<note> &notes);
     noteGetter(std::ifstream &inFile);
@@ -31,7 +28,7 @@ private:
     int getLengthOfVariableLengthValue(int position);
     void incrementLengthandValue(int position, int& length, int& value);
     std::string nextPotentialChunkType(int position);
-    int indexAfterEndOfFileMessageAt(int position);
+    int indexAfterEndOfFileMessageAt();
     int indexAfterMThdAt(int position);
     int indexAfterMTrkAt(int position);
     int indexAfterSysexEventF0orF7(int position);
