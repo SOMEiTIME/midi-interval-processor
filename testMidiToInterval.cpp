@@ -84,10 +84,6 @@ bytes track(initializer_list<bytes> events) {
     return out;
 }
 
-//When testing, consider using an allowed range, as some files, in some formats have a different note count
-//between my method and whatever method Logic X uses to count notes
-//note: Logic X and Finale 2014.5 always differ on note counts due to different definitions of notes
-
 TEST(basicTest, CountingTwoTriads) {
     EXPECT_EQ(6, run(folder + "2Triads.mid"));
 }
@@ -102,30 +98,30 @@ TEST(basicTest, noNoteMidiFile) {
     EXPECT_EQ("", readIntervals(folder + "emptySong.mid"));
 }
 
-TEST(resultsTest, FullPieceTest) {
+TEST(resultsTest, BeethovenMvtI) {
     EXPECT_EQ(22252, run(folderBeethoven +"ScoreMvtI.mid"));
 }
 
-TEST(resultsTest, FullPieceTest2) {
+TEST(resultsTest, BeethovenMvtII) {
     EXPECT_EQ(9135, run(folderBeethoven +"ScoreMvtII.mid"));
 }
 
-TEST(resultsTest, FullPieceTest3) {
+TEST(resultsTest, BeethovenMvtIII) {
     EXPECT_EQ(7186, run(folderBeethoven +"ScoreMvtIII.mid"));
 }
 
-TEST(resultsTest, FullPieceTest4) {
+TEST(resultsTest, BeethovenMvtIV) {
     EXPECT_EQ(14750, run(folderBeethoven +"ScoreMvtIV.mid"));
 }
 
-TEST(resultsTest, FullPieceTest5) {
+TEST(resultsTest, MozartAria) {
     EXPECT_EQ(1123, run(folderMozart +"MF17-ArieScore.mid"));
 }
 
-TEST(resultsTest, problemFile1) {
+TEST(resultsTest, BytesAfterEndOfFileAreIgnored) {
+    //some old files pad the end with 1a bytes after the last end of track; this copy of Mvt I was edited to match
     run(folderBeethoven + "ScoreMvtI.mid"); //writes the intervals file compared against below
-    EXPECT_EQ(22252, run(folderBeethoven +"ScoreMvtIwithWeirdEnding.mid")); //Some old files were found to have a series of bytes 1a1a after the end of file marker,
-    //This file was modified to be in that style
+    EXPECT_EQ(22252, run(folderBeethoven +"ScoreMvtIwithWeirdEnding.mid"));
     EXPECT_EQ(readIntervals(folderBeethoven + "ScoreMvtI.mid"), readIntervals(folderBeethoven + "ScoreMvtIwithWeirdEnding.mid"));
 }
 
