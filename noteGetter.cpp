@@ -81,11 +81,8 @@ int noteGetter::indexAfterEndOfFileMessageAt() {
 */
 int noteGetter::indexAfterMThdAt(int position) {
     lastStatusByte = "";
-    string lengthString = stringHexMid.substr(position+8,8);
-    int length = stoi(lengthString);
-    //  "MTrk" takes 4 bytes and that takes 8 chars to represent, so 1 byte = 2 chars
-    position += length * 4.75; //converts the length in bytes to length in chars( since we are navigating a string representation of this file)
-    return getNextNoteOnPosition(position);
+    int length = stoul(stringHexMid.substr(position+8,8), nullptr, 16); //in bytes, and 1 byte = 2 chars
+    return getNextNoteOnPosition(position + 16 + 2 * length); //skip "MThd", the length and the header data
 }
 
 /*

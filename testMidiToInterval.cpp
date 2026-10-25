@@ -188,6 +188,16 @@ TEST(parsingTest, TracksAreJoinedInFileOrder) {
     EXPECT_EQ("4 3 ", readIntervals(path));
 }
 
+TEST(parsingTest, LongerHeaderIsSkipped) {
+    //an MThd length above 6 is allowed, and readers should skip the extra bytes
+    bytes file = midiFile({track({{0x00, 0x90, 60, 0x40}, {0x00, 63, 0x40}, endOfTrack})});
+    file[7] = 10; //read as hex (0000000a), not decimal
+    file.insert(file.begin() + 14, {0x00, 0x00, 0x00, 0x00});
+    string path = writeTestFile("longHeader.mid", file);
+    EXPECT_EQ(2, run(path));
+    EXPECT_EQ("3 ", readIntervals(path));
+}
+
 TEST(errorTest, MissingFileThrows) {
     EXPECT_THROW(run(folder + "doesNotExist.mid"), runtime_error);
 }
