@@ -5,42 +5,26 @@
 #
 
 #
-# Processes and collates the intervalic content of midi files, and groups that data into a 
-# folder "Results" for further processing
-# These results will be of the format $composerName_intervals.txt
-#
-# Assumes that there is a folder in the directory called ClassicalComposers that is full of
-# MIDI files, grouped into directories by composer name
+# Writes the intervals of every ClassicalComposers/<composer>/*.mid and joins each
+# composer's into ClassicalComposers/Results/<composer>_all_intervals.txt
 #
 
 DIR=ClassicalComposers
-resultFolder=Results
+resultFolder=$DIR/Results
 
-rm $DIR/$resultFolder/*.txt
-mkdir -p $DIR/$resultFolder
+mkdir -p "$resultFolder"
+rm -f "$resultFolder"/*.txt
 
-for composerName in ${DIR}/*
+for composerDir in "$DIR"/*/
 do
-    if [ $composerName != 'ClassicalComposers/Results' ]; then
-        justName=`basename "$composerName"`
-
-        TAG="_all_intervals.txt"
-        allFile=$justName$TAG
-
-        FILES=$composerName/*.mid
-        for f in $FILES
+    composerDir=${composerDir%/}
+    if [ "$composerDir" != "$resultFolder" ]; then
+        allFile=$resultFolder/$(basename "$composerDir")_all_intervals.txt
+        for f in "$composerDir"/*.mid
         do
             echo "   Processing $f file..."
-            # take action on each file. $f store current file name
-            ./midiToInterval $f
+            ./midiToInterval "$f"
         done
-        FILES=$composerName/*_intervals.txt
-        for f in $FILES
-        do
-            # take action on each file. $f store current file name
-            cat $f >> $DIR/$resultFolder/$allFile
-        done
-        
-    fi;
+        cat "$composerDir"/*_intervals.txt >> "$allFile"
+    fi
 done
-
