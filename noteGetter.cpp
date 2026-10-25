@@ -39,7 +39,7 @@ void noteGetter::incrementLengthandValue(int position, int& length, int& value){
     const int msbBitMask = 0x80; //set on every byte of the value except the last
     int byte;
     do {
-        byte = stoul(stringHexMid.substr(position + length, 2), nullptr, 16); //invalid_argument past the end of the file
+        byte = stoul(stringHexMid.substr(position + length, 2), nullptr, 16); //throws past the end of the file
         length += 2;
         value = (value << 7) + (byte & ~msbBitMask); //the MIDI format caps these at 4 bytes, so this can't overflow
     } while (byte & msbBitMask);
