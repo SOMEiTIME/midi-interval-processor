@@ -4,24 +4,8 @@
 #
 
 #
-# DockerFile: create docker image for testing code
-#   - start with ubuntu 16:04, add g++ and GoogleTest
-# Usage:
-#   - create:
-#       docker build ./ --tag midi_interval_tests
-#   - start if not running:
-#       docker start midi_to_interval
-#   - run with sh access (where [image] is the image id published by docker):
-#       docker run -i -t --name midi_to_interval [image] /bin/bash
-#     example:
-#       docker run -i -t --name midi_to_interval 685b01fd837d /bin/bash
-#   - run the test
-#       docker run --name midi_to_interval midi_interval_tests /bin/bash -c 'cd ~/midi_to_interval ; make test'
-#   - list images:
-#       docker ps -l    # last image run
-#       docker ps -a    # all images
-#   - connecting to running image:
-#       docker attach midi_to_interval
+# Builds the code and runs the tests on Ubuntu 18.04 with GoogleTest:
+#   docker build ./ --tag midi_interval_tests
 #
 
 FROM ubuntu:18.04
