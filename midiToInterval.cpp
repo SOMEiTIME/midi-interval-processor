@@ -16,107 +16,79 @@
 using namespace std;
 
 /*
-    Boolean flags for printing information as the program is run
+    Debug flags: print each file's note count or note names as it is run
 */
 bool PRINT_NOTE_COUNT = false;
 bool PRINT_NOTE_NAMES = false;
 
 /*
-    Prints the note count of a given file, 
-    if the flag PRINT_NOTE_COUNT is set to true
-    fileName is the name of the file that is having it's notes counted
-    notes is the list of notes found in the file
+    Prints the note count of a given file, if PRINT_NOTE_COUNT is set
 */
 void printNoteCount(string fileName, list<note> notes) {
-    if(PRINT_NOTE_COUNT){
-        std::cout << "For file: " << fileName << "\n The count of notes is " << std::dec << notes.size() << "\n"; 
+    if (PRINT_NOTE_COUNT) {
+        cout << "For file: " << fileName << "\n The count of notes is " << notes.size() << "\n";
     }
 }
 
 /*
-    Prints the note names found in a given file
-    if the flag PRINT_NOTE_NAMES is set to true
-    fileName is the name of the file that is having it's notes counted
-    notes is the list of notes found in the file
+    Prints the names of the notes in a given file, if PRINT_NOTE_NAMES is set
 */
 void printNoteNames(string fileName, list<note> notes) {
-    if (PRINT_NOTE_NAMES){
-        std::cout << "Note names for file: " << fileName << "\n";
-        for (note x : notes){
-            std::cout << x.toString() << " ";
+    if (PRINT_NOTE_NAMES) {
+        cout << "Note names for file: " << fileName << "\n";
+        for (note x : notes) {
+            cout << x.toString() << " ";
         }
     }
 }
 
 /*
-    Writes the list intervals to the outpu file stream outFile
+    Writes the intervals to outFile, each followed by a space
 */
 void writeIntervalsToFile(ofstream& outFile, list<interval> intervals) {
-    for (interval x : intervals){ 
+    for (interval x : intervals) {
         outFile << x.toString() << " ";
     }
 }
 
 /*
-    creates a list of intervals when given a list of in order notes
+    Returns the intervals between each pair of consecutive notes
 */
 list<interval> populateListWithIntervals(list<note> notes) {
     list<interval> intervals;
-    note previous(0);
-    bool firstItem = true;
-    for (note x : notes) {
-        //Convert the note #s into interval #s
-        //Populate the list of intervals
-        if (!firstItem) { //There isn't an interval if this is the first item
-            intervals.push_back(interval(previous,x)); 
-        }
-        previous = x;
-        firstItem = false;
-    } 
+    for (auto it = notes.begin(); it != notes.end() and next(it) != notes.end(); ++it) {
+        intervals.push_back(interval(*it, *next(it)));
+    }
     return intervals;
 }
 
 /*
-    Takes a file name in string form and returns the count of notes in a file, 
-    as well as potentially writing out a file called <FILENAME>_intervals.txt
-    that lists the intervals in order as found in the MIDI file
+    Writes the intervals between the notes of the MIDI file fileName, in order, to <FILENAME>_intervals.txt
+    Returns the note count
     Throws std::runtime_error if a file can't be opened or the input isn't a readable MIDI file
 */
 int run(string fileName) {
-
-    ifstream inFile;
-    inFile.open(fileName,ios::binary); //Open the input file (must be a MIDI file)
-    int noteCount = 0;
-    list<note> notes; //Will be the list of notes that are found in the file
-    list<interval> intervals; //Will bethe list of intervals of the notes found in the file
-    if (inFile.good()) {
-        noteGetter noteGet(inFile);
-        //Populate the list with all the notes found in the given input file of type .mid
-        //Reading past the end of the data shows up as out_of_range (substr) or invalid_argument (stoi/stoul on an empty string)
-        string malformed = "Truncated or malformed MIDI file: " + fileName;
-        try {
-            noteCount = noteGet.populateListWithNotes(notes);
-        } catch (const out_of_range&) {
-            throw runtime_error(malformed);
-        } catch (const invalid_argument&) {
-            throw runtime_error(malformed);
-        }
-        intervals = populateListWithIntervals(notes);
-        inFile.close();
-    } else {
+    ifstream inFile(fileName, ios::binary);
+    if (!inFile.good()) {
         throw runtime_error("Unable to open input file: " + fileName);
     }
-    ofstream outFile; 
-    outFile.open(fileName + "_intervals.txt",ios::out); 
-    if (outFile.good()) {
-        writeIntervalsToFile(outFile, intervals); //Print out the list of intervals to the given output file
-        outFile.close();
-    } else {
+    list<note> notes;
+    int noteCount;
+    noteGetter noteGet(inFile);
+    //Reading past the end of the data shows up as out_of_range (substr) or invalid_argument (stoul on an empty string)
+    try {
+        noteCount = noteGet.populateListWithNotes(notes);
+    } catch (const out_of_range&) {
+        throw runtime_error("Truncated or malformed MIDI file: " + fileName);
+    } catch (const invalid_argument&) {
+        throw runtime_error("Truncated or malformed MIDI file: " + fileName);
+    }
+    ofstream outFile(fileName + "_intervals.txt");
+    if (!outFile.good()) {
         throw runtime_error("Unable to open output file: " + fileName + "_intervals.txt");
     }
+    writeIntervalsToFile(outFile, populateListWithIntervals(notes));
     printNoteCount(fileName, notes);
-    printNoteNames(fileName, notes);    
+    printNoteNames(fileName, notes);
     return noteCount;
 }
-
-
