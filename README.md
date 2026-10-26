@@ -7,8 +7,9 @@ Run on one file:
 make midiToInterval
 ./midiToInterval inputFileName
 ```
-Build and run all tests in Docker:
+Build and run all tests (needs GoogleTest), or do the same in Docker:
 ```
+make test
 docker build ./ --tag midi_interval_tests
 ```
 Process midi data in a directory called ClassicalComposers, with the data grouped into directories by composer name:

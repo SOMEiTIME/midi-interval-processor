@@ -9,6 +9,7 @@
 #include "noteGetter.h"
 #include "musicalConcept.h"
 
+#include <iomanip>
 #include <sstream>
 #include <list>
 #include <stdexcept>
@@ -17,73 +18,31 @@
 using namespace std;
 
 /*
-    Constructor for noteGetter, inFile must point to a file in the format .mid (MIDI 1.0 file format)
+    Constructor for noteGetter, inFile must be a MIDI 1.0 file opened in binary mode
+    Reads the whole file into stringHexMid, two lowercase hex characters per byte
 */
 noteGetter::noteGetter(ifstream &inFile) {
-    runningStatus = false;
-    lastStatusByte = "";
-    stringHexMid = "";
-    string str;
-    inFile.seekg(0); //Reset the pointer to the start of the file, as when it was written the file pointer got put to almost the end of the file
-    ostringstream test;
-    stringstream buffer;
-    stringstream tempBitForFormatting;
-    char smallPart;
-    //get returns unformatted data in the size of one character so M, then t, then H, then D
-    while (inFile.get(smallPart)) {
-        tempBitForFormatting.str("");  //This clears the tempBitForFormatting
-        tempBitForFormatting << std::hex << (int) smallPart; //casts each character to an int 
-                                            //converts that int into a sting
-                //then converts that string to hex
-        //Formatting:
-        string stringBitForFormatting = tempBitForFormatting.str();
-        if (stringBitForFormatting.length() == 1) { //Parts that are like 01 get shortened to 1, so the 0 must be added back in
-            tempBitForFormatting.clear();
-            tempBitForFormatting.str("0" + stringBitForFormatting);
-        } else if (stringBitForFormatting.find("ffffff") !=  string::npos){
-            tempBitForFormatting.clear();
-            tempBitForFormatting.str(stringBitForFormatting.substr(6,2));
-        }
-        buffer << tempBitForFormatting.str();
-        tempBitForFormatting.str(""); //Rhis clears the tempBitForFormatting
+    ostringstream hexStream;
+    hexStream << hex << setfill('0');
+    char byte;
+    while (inFile.get(byte)) {
+        hexStream << setw(2) << (int)(unsigned char)byte;
     }
-    stringHexMid = buffer.str(); //This is a string representation of the hex interpretation of the binary .mid file
-    inFile.seekg(0); //Have to reset the pointer to the start of the file, as when it was written the file pointer got put to almost the end of the file
+    stringHexMid = hexStream.str();
 }
 
 /*
-    Helper function for Variable Length Values, used in the getLengthOfVariableLengthValue and getVariableLengthValue
-    increments both length and value (should be 0 at the calling of the function)
-    Position is the start of the variable length value in the given stringHexMid
+    Reads the variable length value starting at position in stringHexMid
+    Adds its length in characters to length and its value to value (both should start at 0)
 */
 void noteGetter::incrementLengthandValue(int position, int& length, int& value){
-    bool notTheEnd = true; 
-    stringstream valueString;
-    while (notTheEnd) {
-        string deltaPart = "";
-        deltaPart = stringHexMid.substr(position + length,2);//Load up one byte a time (2 char's worth)
-        int deltaPartInt = 0;
-        //convert this string representation in hex to int variable, then convert that int into binary (this is easy, as ints are stored in binary)
-        try {
-            deltaPartInt = std::stoul(deltaPart, nullptr, 16); //converts the string note on value in hex to an int
-        } catch (const std::invalid_argument&) {
-            throw std::out_of_range("Variable length value runs past the end of the file");
-        }
-        const unsigned char msbBitMask = 128; //0000 0001
-        //1111 0101 Would be not the end of the delta time event
-    //   &1000 0000
-        //result: 1000 0000  so a nonzero result means that we aren't at the end
-        //0111 1111 Would be the end of the delta time event
-        unsigned char result = deltaPartInt & msbBitMask;
-        if (result == 0) { //this means the function is at the end of the delta time event 
-            notTheEnd = false;
-        }
-        length +=2;
-        unsigned char valueOfDeltaPartInt = deltaPartInt & ~msbBitMask;
-        value = value << 7; //Overflow is not an issue, because the max value allowed in variable length quntities is defined by the midi format
-        value += valueOfDeltaPartInt; 
-    }
-    return;
+    const int msbBitMask = 0x80; //set on every byte of the value except the last
+    int byte;
+    do {
+        byte = stoul(stringHexMid.substr(position + length, 2), nullptr, 16); //throws past the end of the file
+        length += 2;
+        value = (value << 7) + (byte & ~msbBitMask); //the MIDI format caps these at 4 bytes, so this can't overflow
+    } while (byte & msbBitMask);
 }
 
 /*
@@ -98,7 +57,7 @@ int noteGetter::getLengthOfVariableLengthValue(int position){
 }
 
 /*
-    Returns the value given by a varaiable length value 
+    Returns the value given by a variable length value
     Position is the start of the variable length value in the given stringHexMid
 */
 int noteGetter::getVariableLengthValue(int position) {
@@ -109,15 +68,11 @@ int noteGetter::getVariableLengthValue(int position) {
 }
 
 /*
-    Returns the position of the next message after an end of file message
-    Position is the start of the current message
+    Returns -1, as nothing follows an end of file message
 */
-int noteGetter::indexAfterEndOfFileMessageAt(int position) {
-    runningStatus = false; //running status is set to false, as this is note a midi note on event
-    //this is true for all non midi note on messages (with the goals of this parse being to just find midi note on messages)
-    lastStatusByte = "";
-    position = -1;
-    return position;
+int noteGetter::indexAfterEndOfFileMessageAt() {
+    lastStatusByte = ""; //like every message that isn't a MIDI event, this ends running status
+    return -1;
 }
 
 /*
@@ -125,14 +80,9 @@ int noteGetter::indexAfterEndOfFileMessageAt(int position) {
     Position is the start of the current message
 */
 int noteGetter::indexAfterMThdAt(int position) {
-    runningStatus = false;
     lastStatusByte = "";
-    //Ff a MTrk header, skip forward by the length section
-    string lengthString = stringHexMid.substr(position+8,8);
-    int length = stoi(lengthString);
-    //  "MTrk" takes 4 bytes and that takes 8 chars to represent, so 1 byte = 2 chars
-    position += length * 4.75; //converts the length in bytes to length in chars( since we are navigating a string representation of this file)
-    return getNextNoteOnPosition(position);
+    int length = stoul(stringHexMid.substr(position+8,8), nullptr, 16); //in bytes, and 1 byte = 2 chars
+    return getNextNoteOnPosition(position + 16 + 2 * length); //skip "MThd", the length and the header data
 }
 
 /*
@@ -140,12 +90,8 @@ int noteGetter::indexAfterMThdAt(int position) {
     Position is the start of the current message
 */
 int noteGetter::indexAfterMTrkAt(int position) {
-    runningStatus = false;
     lastStatusByte = "";
-    //MTrk header
-    //Go forward 8 more bytes (so 16 more characters) 
-    //Skips over the MTrk header and then the length part of the header (4 bytes after MTrk)
-    return indexAfterDeltaTimeEvent(position + 16); //The next message will be a delta time event
+    return indexAfterDeltaTimeEvent(position + 16); //skip "MTrk" and its 4 byte length; a delta time comes next
 }
 
 /*
@@ -153,12 +99,9 @@ int noteGetter::indexAfterMTrkAt(int position) {
     Position is the start of the current message
 */
 int noteGetter::indexAfterSysexEventF0orF7(int position) {
-    runningStatus = false; 
     lastStatusByte = "";
-    //Find the length to skip forward (it's a variable length value, so it could be quite long)
-    //Length is in bytes
-    int lengthVal = 2 * getVariableLengthValue(position+2); //1 byte = 2 char
-    lengthVal += getLengthOfVariableLengthValue(position+2) + 2; // the +2 is for the F0 or F7 message itself
+    int lengthVal = 2 * getVariableLengthValue(position+2); //the length is in bytes, and 1 byte = 2 chars
+    lengthVal += getLengthOfVariableLengthValue(position+2) + 2; //+2 for the F0 or F7 itself
     return indexAfterDeltaTimeEvent(position+lengthVal);
 }
 
@@ -167,150 +110,110 @@ int noteGetter::indexAfterSysexEventF0orF7(int position) {
     Position is the start of the current message
 */
 int noteGetter::indexAfterMetaEvent(int position) {
-    runningStatus = false;
-    lastStatusByte = "";            
-    string metaEventType = stringHexMid.substr(position+2,2);
-    if (metaEventType == "2f") {
-            string potentialChunkType = nextPotentialChunkType(position + 6);
-            if (potentialChunkType == "4d54726b") {
-                return getNextNoteOnPosition(position + 6); //expect a track header message , we know its length 6 because these are always FF 2f 00
-            } else {
-                //If there isn't a track header message, it must be the end of the file         
-                return -1;
-            }
-        }           
-    //Find the length, skip forward
+    lastStatusByte = "";
+    if (stringHexMid.substr(position+2,2) == "2f") { //end of track, always ff 2f 00
+        if (nextPotentialChunkType(position + 6) == "4d54726b") {
+            return getNextNoteOnPosition(position + 6); //another track follows
+        }
+        return -1; //no more tracks, so this is the end of the file
+    }
     int lengthVal = 2 * getVariableLengthValue(position+4);
     lengthVal += getLengthOfVariableLengthValue(position+4) + 4; // +4 for the FF nn format
     return indexAfterDeltaTimeEvent(position+lengthVal);
 }
 
 /*
-    Returns the position of the next message after a note on message
-    Position is the start of the current message
+    Returns the position of the next note on message, starting from the MIDI event at position
+    eventType is the event's first byte, which is a data byte if the event uses running status
 */
 int noteGetter::indexAfterNextNoteOnMessage(string eventType, int position) {
-    string potentialMidiEventByte = eventType.substr(0,2);
-    string statusType = potentialMidiEventByte.substr(0,1);
-    bool isRunningStatusMessage = not (statusType == "8" 
-        or statusType == "9" 
-        or statusType == "a" 
-        or statusType == "b" 
-        or statusType == "c"
-        or statusType == "d"
-        or statusType == "e"); //data bytes will never start with an 8-e
-    if (isRunningStatusMessage) {       //If this is the result of a running status style message (no midi event status byte) 
-        if (lastStatusByte.substr(0,1) == "9") { //This is then "note-on" status
-                //This is a running status style message for a note on event
-            return (position - 2); //interprets this message like a 9n was there 
+    char statusType = eventType[0];
+    bool isStatusByte = statusType == '8' or statusType == '9' or (statusType >= 'a' and statusType <= 'e');
+    if (not isStatusByte) { //a data byte (00-7f), so this message uses running status
+        if (lastStatusByte[0] == '9') {
+            return position - 2; //a running status note on, read it as if the 9n were there
         }
-        //else, handle like any other midi message (so skip over it by 4 or 6 characters)
-        //cn and dn daya bytes are 2 characters long
-        //others are 4 characters long
-        string runningStatusType = lastStatusByte.substr(0,1); //statusType is a data byte here, so check the remembered status
-        if (runningStatusType == "c" or runningStatusType == "d") {
-            return indexAfterDeltaTimeEvent(position + 2); 
+        //skip the data bytes of the remembered status: cn and dn have one, others two
+        char runningStatusType = lastStatusByte[0];
+        if (runningStatusType == 'c' or runningStatusType == 'd') {
+            return indexAfterDeltaTimeEvent(position + 2);
         } else {
-            return indexAfterDeltaTimeEvent(position + 4); 
+            return indexAfterDeltaTimeEvent(position + 4);
         }
-    } else {        //or it is a new midi status-byte
-        string midiEventByte = potentialMidiEventByte; //potentialMidiEventByte is now known to be the midi event byte
-        lastStatusByte = midiEventByte;
-        runningStatus = true;  //should go into running status
-        if (midiEventByte.substr(0,1) == "9"){
-            return position; //this is a noteOnMessage
+    } else { //a new status byte
+        lastStatusByte = eventType;
+        if (statusType == '9') {
+            return position; //this is a note on message
         }
-        if (statusType == "c" or statusType == "d") {
+        if (statusType == 'c' or statusType == 'd') {
             return indexAfterDeltaTimeEvent(position + 4);
         } else {
-            return indexAfterDeltaTimeEvent(position + 6); 
+            return indexAfterDeltaTimeEvent(position + 6);
         }
     }
 }
 
 /*
-    Returns the a block of the MIDI file that may be a chunk type (header message)
-    Position is the start of the current message
+    Returns the 4 bytes at position, which may be a chunk type (MThd or MTrk)
 */
 string noteGetter::nextPotentialChunkType(int position) {
-    string potentialChunkType = "";
     try {
-        potentialChunkType = stringHexMid.substr(position,8);
-    } catch (std::exception& e) {
+        return stringHexMid.substr(position,8);
+    } catch (const out_of_range&) {
         throw range_error("Got to the end of the file too early at position: "+to_string(position));
     }
-    return potentialChunkType;
 }
-
 
 /*
     Returns the position of the next message after a delta time MIDI message
     Position is the start of the current message
 */
 int noteGetter::indexAfterDeltaTimeEvent (int position) {
-    position += getLengthOfVariableLengthValue(position);
-    return getNextNoteOnPosition(position);//We know the next event will not be a deltaTimeEvent
+    return getNextNoteOnPosition(position + getLengthOfVariableLengthValue(position));
 }
 
 /*
-    Returns the position of the next note on MIDI message in the file 
+    Returns the position of the next note on message in the file, or -1 at the end of the file
     Position is the start of the current message
     This is a type of recursive descent parser
 */
-int noteGetter::getNextNoteOnPosition(int position) {//i'd like this to be a pointer, not an actual string (longer term optimisation)
+int noteGetter::getNextNoteOnPosition(int position) {
     string potentialChunkType = nextPotentialChunkType(position);
-    if (potentialChunkType.substr(0,8) == "ff2f0000") { //it's the end of the file! //this is a sysex event
-        return indexAfterEndOfFileMessageAt(position);
-    } else if (potentialChunkType == "4d546864"){ //MThd = 4d546864
+    if (potentialChunkType == "ff2f0000") { //end of track followed by a 00 byte, taken as the end of the file
+        return indexAfterEndOfFileMessageAt();
+    } else if (potentialChunkType == "4d546864") { //MThd
         return indexAfterMThdAt(position);
-    } else if (potentialChunkType == "4d54726b") { // MTrk
-        return indexAfterMTrkAt(position); //The next message will be a delta time event
-    } else {
-        //it's an event of type: 
-        string eventType = stringHexMid.substr(position,2); 
-        if (eventType == "f0" or eventType == "f7") { //sysex event F0 or F7
-            return indexAfterSysexEventF0orF7(position);
-        } else if (eventType == "ff") { //meta event
-            return indexAfterMetaEvent(position);
-        } else {    //this is a midi event of some type (with or without a midiEventByte)
-            return indexAfterNextNoteOnMessage(eventType, position);
-        }
+    } else if (potentialChunkType == "4d54726b") { //MTrk
+        return indexAfterMTrkAt(position);
     }
+    string eventType = stringHexMid.substr(position,2);
+    if (eventType == "f0" or eventType == "f7") {
+        return indexAfterSysexEventF0orF7(position);
+    } else if (eventType == "ff") {
+        return indexAfterMetaEvent(position);
+    }
+    return indexAfterNextNoteOnMessage(eventType, position); //a MIDI event, with or without a status byte
 }
 
 /*
-    Given an empty list of numerical representation of notes, it will fill that list of notes with the notes on messages found in the .mid file
- */
+    Fills the given empty list with the notes of the note on messages in the file, and returns how many there are
+*/
 int noteGetter::populateListWithNotes(list<note> &notes) {
     if (stringHexMid.compare(0, 8, "4d546864") != 0) { //every MIDI file starts with an MThd chunk
         throw runtime_error("Not a MIDI file (no MThd header)");
     }
     int count = 0;
-    int position = 0;
-    position = getNextNoteOnPosition(position);  
-    string line, noteOnMessage, noteNumHex, velocityNumHex, channelMessage;
+    int position = getNextNoteOnPosition(0);
     while (position != -1) {
-        string strLine = stringHexMid.substr(position,6);
-        channelMessage = strLine.substr(1,1);
-        noteOnMessage = strLine.substr(2,4);  
-        noteNumHex = noteOnMessage.substr(0,2);
-        velocityNumHex = noteOnMessage.substr(2,2);
-        //exlude notes with velocity 0, as those are "note off" messages commonly used in lots of .mid files
-        int noteNumInt = std::stoul(noteNumHex, nullptr, 16); //converts the string note on value in hex to an int
-        int noteVelInt = std::stoul(velocityNumHex, nullptr, 16);
-        //exlude the false notes that are lower than the bottom of a piano
-        if (noteVelInt >= 1 and noteVelInt <= 127 and noteNumInt >= 0 and noteNumInt <= 127) {//exlude midi messages that don't make sense
+        //position is a 9n note on status byte, then the note number and velocity
+        int noteNumInt = stoul(stringHexMid.substr(position + 2, 2), nullptr, 16);
+        int noteVelInt = stoul(stringHexMid.substr(position + 4, 2), nullptr, 16);
+        //velocity 0 is a note off, and values above 127 aren't valid MIDI data
+        if (noteVelInt >= 1 and noteVelInt <= 127 and noteNumInt <= 127) {
             notes.push_back(note(noteNumInt));
             count += 1;
-        } 
-         //Just processed a note on message, and so the next expected event is a delta time event (after 6 chars (or 3 bytes) of midi note on message)
-        if (runningStatus) {
-            //the +6 accounts for a status bit, if this is a running status note, its +4
-            position =  indexAfterDeltaTimeEvent(position+6); //we arent expecting a deltaTime when the status is running?
-        } else {                                                                
-            runningStatus = true; //either way, enter running status
-            position =  indexAfterDeltaTimeEvent(position+6);
         }
-    } 
+        position = indexAfterDeltaTimeEvent(position + 6); //a delta time follows the 3 byte message
+    }
     return count;
 }

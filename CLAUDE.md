@@ -22,7 +22,7 @@ make clean
 ## Conventions
 - Every file starts with a header block comment. Copy it from `main.cpp` into new files.
 - Comment block above each function describing what it does; camelCase for functions and variables, lowercase class names.
-- Adding a source file means adding its `.o` rule and linking it in both `midiToInterval` and `testMidiToInterval` in the Makefile (rules are explicit, not pattern-based).
+- Adding a source file means adding its `.o` rule (listing the headers it includes) and linking it in both `midiToInterval` and `testMidiToInterval` in the Makefile (rules are explicit, not pattern-based).
 - Tests assert on `run()`'s returned note count and on the intervals file's contents, so changing the output format or interval calculation will break them.
 - Test data comes from mutopiaproject.org; keep the citations in the README when adding pieces.
 

@@ -3,8 +3,7 @@
 # suite if gtest is installed (it isn't on every machine; the Dockerfile has it).
 set -euo pipefail
 cd "$(dirname "$0")/.."
-# Clean first: the Makefile doesn't list headers as dependencies, so an
-# incremental build can skip files (and their warnings) after a header change.
+# Clean first so every file is compiled and its warnings shown.
 make clean >/dev/null
 build_log="$(make midiToInterval 2>&1)" || { echo "$build_log"; exit 1; }
 echo "$build_log"
